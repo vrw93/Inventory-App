@@ -79,6 +79,26 @@ class Storage():
         self.conn.close()
         return row 
     
+    def returnItem(self, items, date):
+        conn = self.getDB()
+        c = conn.cursor()
+
+        for item, amount in items.items():
+            c.execute("""
+                UPDATE item SET total = total + ? WHERE id = ?
+            """, (amount, item))
+
+            c.execute("""
+                UPDATE borrowitem SET amount = amount - ? WHERE nama_item = ?
+            """,(amount, item))
+
+            c.execute("""
+                UPDATE borrowitem SET tanggal_kembali = ? WHERE nama_item = ?
+            """,(date, item))
+
+            conn.commit()
+            conn.close()
+
     def borrowItem(self, items, key, date, peminjam):
         conn = self.getDB()
         c = conn.cursor()
@@ -116,4 +136,5 @@ class Storage():
 
         rows = c.fetchall()
         c.close()
+        conn.close()
         return rows

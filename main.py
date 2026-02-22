@@ -164,6 +164,7 @@ class returnWindow(QDialog):
 
         #Load Thing
         self.loadBorrowItem()
+        self.RtnBtn.clicked.connect(self.returnSelectedItem)
 
         #Post Load
         layouts = QVBoxLayout()
@@ -195,6 +196,31 @@ class returnWindow(QDialog):
             _date = date
 
         self.borrowLabel.setText(f"Pilih Item Yang Anda Pijam Pada {_date} Dan Ingin Dikembalikan")
+
+    def returnSelectedItem(self):
+        date = datetime.now()
+        formatDate =  date.strftime("%Y-%m-%d %H:%M")
+        items = {}
+        error = False
+
+        for row in range(self.table.rowCount()):
+            item = self.table.item(row, 0)
+            if item != None and int(item.text()) > 0:
+                data = self.table.item(row, 2)
+                if data.checkState() == Qt.CheckState.Checked:
+                    amnt = int(self.table.item(row, 1).text())
+                    if amnt > 0:
+                        items[data.text()] = amnt
+                    else:
+                        error = True
+
+        if len(items) > 0 and error == False:
+            self.db.returnItem(items, formatDate)
+            QMessageBox.information(self, "Terimakasih", f"Terimakasih Telah Mengembalikan")
+        elif error:
+            QMessageBox.critical(self, "Error", "Tolong Masukkan Jumlah Item Yang Ingin Dipijam")
+        else:
+            QMessageBox.critical(self, "Error", "Tolong Memilih Setidaknya 1 Item")
 
     def resource_path(self, relative_path):
         if hasattr(sys, "_MEIPASS"):
