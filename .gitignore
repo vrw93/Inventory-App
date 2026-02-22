@@ -217,3 +217,5 @@ __marimo__/
 
 #Sqlite3
 *.db
+Core/DB/DataBase.db
+Core/DB/DataBase.db
