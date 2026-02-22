@@ -96,7 +96,7 @@
       </widget>
      </item>
      <item row="1" column="0" colspan="2">
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="borrowLabel">
        <property name="text">
         <string>Pilih Item Yang Ingin Dikembalikan</string>
        </property>

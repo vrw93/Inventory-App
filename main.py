@@ -59,12 +59,22 @@ class main(QMainWindow):
         self.loadItem()
 
     def rtnWindow(self):
-        text, ok = QInputDialog.getText(self, "Masukkan Kode", "Masukkan Kode Pijammu")
-        if ok and text:
-            dlg = returnWindow(text)
-            dlg.exec()
-        else:
-            QMessageBox.critical(self, "Error", "Tolong Masukkan Kode Peminjaman")
+        accpt = False
+
+        while(accpt == False):
+            text, ok = QInputDialog.getText(self, "Masukkan Kode", "Masukkan Kode Pijammu")
+            if ok and text:
+                items = self.db.getBorrowItem(text)
+                if items:
+                    accpt = True
+                    dlg = returnWindow(items)
+                    dlg.exec()
+                elif not items:
+                    QMessageBox.critical(self, "Error", "Kode Mu Tidak Ditemukan Di Database Kami")
+            elif ok and not text:
+                QMessageBox.critical(self, "Error", "Tolong Masukkan Kode Peminjaman")
+            else:
+                accpt = True
 
     def loadItem(self):
         items = self.db.getItem()
@@ -91,6 +101,7 @@ class main(QMainWindow):
 
     def getSelectedItem(self):
         date = datetime.now()
+        formatDate =  date.strftime("%Y-%m-%d %H:%M")
         items = {}
         error = False
 
@@ -109,7 +120,7 @@ class main(QMainWindow):
 
             if len(items) > 0 and error == False:
                 key = self.randomKeyCode()
-                self.db.borrowItem(items, key, date, text)
+                self.db.borrowItem(items, key, formatDate, text)
                 QMessageBox.information(self, "Kode Pijam", f"Kode Pijammu Adalah '{key}' SIMPAN DENGAN BAIK")
             elif error:
                 QMessageBox.critical(self, "Error", "Tolong Masukkan Jumlah Item Yang Ingin Dipijam")
@@ -131,9 +142,9 @@ class main(QMainWindow):
         return os.path.join(os.path.abspath("."), relative_path)
 
 class returnWindow(QDialog):
-    def __init__(self, code):
+    def __init__(self, items):
         super().__init__()
-        self.code = code
+        self.items = items
         #Windows Setup
         self.setWindowTitle("Kembalikan Barang")
         self.setGeometry(100, 100, 500, 400)
@@ -149,10 +160,41 @@ class returnWindow(QDialog):
         #Item Referencing
         self.table = self.ui.findChild(type(self.ui.ItemSelect), "ItemSelect")
         self.RtnBtn = self.ui.findChild(type(self.ui.ReturnBtn), "ReturnBtn")
+        self.borrowLabel = self.ui.findChild(type(self.ui.borrowLabel), "borrowLabel")
 
+        #Load Thing
+        self.loadBorrowItem()
+
+        #Post Load
         layouts = QVBoxLayout()
         layouts.addWidget(self.ui)
         self.setLayout(layouts)
+
+    def loadBorrowItem(self):
+        items = self.items
+        self.table.setRowCount(len(items))
+        self.table.setEditTriggers(
+            QAbstractItemView.EditTrigger.DoubleClicked |
+            QAbstractItemView.EditTrigger.SelectedClicked
+        )
+
+        for row, (_, id, total, date) in enumerate(items):
+            item = QTableWidgetItem(str(id))
+            item.setCheckState(Qt.CheckState.Unchecked)
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            self.table.setItem(row, 2, item)
+
+            _total = QTableWidgetItem(str(total))
+            _total.setFlags(_total.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            self.table.setItem(row, 0, _total)
+
+            editable_item = QTableWidgetItem("0")
+            editable_item.setFlags(editable_item.flags() | Qt.ItemFlag.ItemIsEditable)
+            self.table.setItem(row, 1, editable_item)
+            self.table.setItemDelegate(numericDelegate(total, row, 1))
+            _date = date
+
+        self.borrowLabel.setText(f"Pilih Item Yang Anda Pijam Pada {_date} Dan Ingin Dikembalikan")
 
     def resource_path(self, relative_path):
         if hasattr(sys, "_MEIPASS"):
