@@ -75,9 +75,9 @@ class Storage():
             ORDER BY id COLLATE NOCASE
         """)
 
-        self.row = self.c.fetchall()
+        row = self.c.fetchall()
         self.conn.close()
-        return self.row 
+        return row 
     
     def borrowItem(self, items, key, date, peminjam):
         conn = self.getDB()
@@ -102,3 +102,18 @@ class Storage():
 
         conn.commit()
         conn.close()
+
+    def getBorrowItem(self, key):
+        conn = self.getDB()
+        c = conn.cursor()
+
+        c.execute("""
+            SELECT borrow.key, borrowitem.nama_item, borrowitem.amount, borrowitem.tanggal_pinjam
+            FROM borrow
+            INNER JOIN borrowitem ON borrow.id = borrowitem.peminjam_id
+            WHERE borrow.key = ?
+        """, (key, ))
+
+        rows = c.fetchall()
+        c.close()
+        return rows
