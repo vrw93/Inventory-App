@@ -11,9 +11,28 @@
 - Return Item Window
 - Key Code Base Inventory System
 
-## ⚒ Road Map
+## 🗺 Road Map
 - [ ] Add Admin Window
+- [ ] Add Key Code or List Base System
 - [ ] QOL
+
+## ⚒ Tech Stack
+### Programing Language 
+- Python 3.13.9
+### Framework
+- PySide6
+### Database
+- SQLite3
+### Tools
+- Git
+- VS code
+- Pyside6 Designer
+### Target Platform
+- Windows 10
+- Windows 11
+
+## 📝 Note
+This Is **ONLY** My Hobby Project May There Was Bug In Some Early Builds
 
 ## LICENSE
 This Project Is Under MIT LICENSE see [LICENSE](LICENSE) For More Info
