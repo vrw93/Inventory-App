@@ -1,8 +1,7 @@
 import sys, os, string, random
 from PySide6.QtWidgets import (QApplication, QMainWindow, QTableWidgetItem, 
-QAbstractItemView, QStyledItemDelegate, QLineEdit, QMessageBox, QInputDialog
-, QDialog, QVBoxLayout, QSpinBox)
-from PySide6.QtGui import QIntValidator
+QAbstractItemView, QMessageBox, QInputDialog, QDialog, QVBoxLayout, 
+QSpinBox)
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt
 from Core import Storage
@@ -30,7 +29,7 @@ class main(QMainWindow):
 
         #button Setup
         self.pjmbtn.clicked.connect(self.getSelectedItem)
-        self.rtnW.clicked.connect(self.rtnWindow)
+        self.rtnW.clicked.connect(self.BorrowerWindow)
 
         #Post Setup
         self.setCentralWidget(self.ui)
@@ -54,6 +53,10 @@ class main(QMainWindow):
                 QMessageBox.critical(self, "Error", "Tolong Masukkan Kode Peminjaman")
             else:
                 accpt = True
+
+    def BorrowerWindow(self):
+        dlg = borrowerWindow()
+        dlg.exec()
 
     def loadItem(self):
         items = self.db.getItem()
@@ -103,6 +106,7 @@ class main(QMainWindow):
             if len(items) > 0 and error == False:
                 key = self.randomKeyCode()
                 self.db.borrowItem(items, key, formatDate, text)
+                self.loadItem()
                 QMessageBox.information(self, "Kode Pijam", f"Kode Pijammu Adalah '{key}' SIMPAN DENGAN BAIK")
             elif error:
                 QMessageBox.critical(self, "Error", "Tolong Masukkan Jumlah Item Yang Ingin Dipijam")
@@ -117,6 +121,56 @@ class main(QMainWindow):
 
         print(key)
         return key
+
+    def resource_path(self, relative_path):
+        if hasattr(sys, "_MEIPASS"):
+            return os.path.join(sys._MEIPASS, relative_path)
+        return os.path.join(os.path.abspath("."), relative_path)
+
+class borrowerWindow(QDialog):
+    def __init__(self):
+        super().__init__()
+        #Windows Setup
+        self.setWindowTitle("Peminjam Barang")
+        self.setGeometry(100, 100, 500, 400)
+        
+        #File/DB
+        loader = QUiLoader()
+        file = QFile(self.resource_path("Ui/borrower.ui"))
+        file.open(QFile.ReadOnly)
+        self.ui = loader.load(file, self)
+        file.close()
+        self.db = Storage.Storage()
+
+        #Item Referencing
+        self.table = self.ui.findChild(type(self.ui.ItemSelect), "ItemSelect")
+        self.borrowLabel = self.ui.findChild(type(self.ui.borrowLabel), "borrowLabel")
+
+        #Load Thing
+        self.loadBorrower()
+        self.table.itemClicked.connect(self.selectBorrower)
+
+        #Post Load
+        layouts = QVBoxLayout()
+        layouts.addWidget(self.ui)
+        self.setLayout(layouts)
+
+    def loadBorrower(self):
+        borrowers = self.db.getBorrower()
+        self.table.setRowCount(len(borrowers))
+        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        
+        for row, (name, key) in enumerate(borrowers):
+            borrower = QTableWidgetItem(name)
+            borrower.setData(Qt.UserRole, key)
+            borrower.setData(Qt.UserRole + 1, name)
+            self.table.setItem(row, 0, borrower)
+
+    def selectBorrower(self, item):
+        key = item.data(Qt.UserRole)
+        items = self.db.getBorrowItem(key)
+        dlg = returnWindow(items)
+        dlg.exec()
 
     def resource_path(self, relative_path):
         if hasattr(sys, "_MEIPASS"):
@@ -161,8 +215,9 @@ class returnWindow(QDialog):
             QAbstractItemView.EditTrigger.SelectedClicked
         )
 
-        for row, (_, id, total, date) in enumerate(items):
-            item = QTableWidgetItem(str(id))
+        for row, (_, itemName, total, date, id) in enumerate(items):
+            item = QTableWidgetItem(str(itemName))
+            item.setData(Qt.UserRole, id)
             item.setCheckState(Qt.CheckState.Unchecked)
             item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table.setItem(row, 2, item)
@@ -193,15 +248,17 @@ class returnWindow(QDialog):
             if item != None and int(item.text()) > 0:
                 data = self.table.item(row, 2)
                 if data.checkState() == Qt.CheckState.Checked:
-                    amnt = int(self.table.item(row, 1).text())
+                    amnt = self.table.cellWidget(row, 1).value()
+                    id = data.data(Qt.UserRole)
                     if amnt > 0:
-                        items[data.text()] = amnt
+                        itemdata = (amnt, id)
+                        items[data.text()] = itemdata
                     else:
                         error = True
 
         if len(items) > 0 and error == False:
             self.db.returnItem(items, formatDate)
-            QMessageBox.information(self, "Terimakasih", f"Terimakasih Telah Mengembalikan")
+            QMessageBox.information(self, "Terimakasih", "Terimakasih Telah Mengembalikan")
         elif error:
             QMessageBox.critical(self, "Error", "Tolong Masukkan Jumlah Item Yang Ingin Dipijam")
         else:
