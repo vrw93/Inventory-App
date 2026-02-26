@@ -35,7 +35,6 @@ class Storage():
 
         self.conn.commit()
         self.conn.close()
-        print("Succes Create DB")
         
     def is_frozen(self):
         return getattr(sys, "frozen", False)
@@ -83,22 +82,23 @@ class Storage():
         conn = self.getDB()
         c = conn.cursor()
 
-        for item, amount in items.items():
+        for item, (amount, id) in items.items():
             c.execute("""
                 UPDATE item SET total = total + ? WHERE id = ?
             """, (amount, item))
 
             c.execute("""
-                UPDATE borrowitem SET amount = amount - ? WHERE nama_item = ?
-            """,(amount, item))
+                UPDATE borrowitem SET amount = amount - ? WHERE id = ?
+            """,(amount, id))
 
             c.execute("""
                 UPDATE borrowitem SET tanggal_kembali = ? WHERE nama_item = ?
             """,(date, item))
 
-            conn.commit()
-            conn.close()
+        conn.commit()
+        conn.close()
 
+    # Borrow
     def borrowItem(self, items, key, date, peminjam):
         conn = self.getDB()
         c = conn.cursor()
@@ -128,11 +128,25 @@ class Storage():
         c = conn.cursor()
 
         c.execute("""
-            SELECT borrow.key, borrowitem.nama_item, borrowitem.amount, borrowitem.tanggal_pinjam
+            SELECT borrow.key, borrowitem.nama_item, borrowitem.amount, borrowitem.tanggal_pinjam, borrowitem.id
             FROM borrow
             INNER JOIN borrowitem ON borrow.id = borrowitem.peminjam_id
             WHERE borrow.key = ?
         """, (key, ))
+
+        rows = c.fetchall()
+        c.close()
+        conn.close()
+        return rows
+    
+    def getBorrower(self):
+        conn = self.getDB()
+        c = conn.cursor()
+
+        c.execute("""
+            SELECT nama_peminjam, key FROM borrow
+            ORDER BY nama_peminjam DESC
+        """)
 
         rows = c.fetchall()
         c.close()

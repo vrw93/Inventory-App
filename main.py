@@ -1,33 +1,11 @@
 import sys, os, string, random
 from PySide6.QtWidgets import (QApplication, QMainWindow, QTableWidgetItem, 
-QAbstractItemView, QStyledItemDelegate, QLineEdit, QMessageBox, QInputDialog
-, QDialog, QVBoxLayout)
-from PySide6.QtGui import QIntValidator
+QAbstractItemView, QMessageBox, QInputDialog, QDialog, QVBoxLayout, 
+QSpinBox)
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt
 from Core import Storage
 from datetime import datetime
-
-class numericDelegate(QStyledItemDelegate):
-    def __init__(self, maxNum, row, col):
-        super().__init__()
-        self.maxNum = maxNum
-        self.col = col
-        self.row = row
-
-    def createEditor(self, parent, option, index):
-        editor = super().createEditor(parent, option, index)
-        #if index.row() == self.row and index.column() == self.col:
-        if isinstance(editor, QLineEdit):
-            validator = QIntValidator(0, self.maxNum, editor)
-            editor.setValidator(validator)
-
-        #if editor.hasAcceptableInput():
-        #    pass
-        #else:
-        #    QMessageBox.critical(None, "Error", f"Please Enter Number Between 0 - {self.maxNum}")
-
-        return editor
 
 class main(QMainWindow):
     def __init__(self):
@@ -51,30 +29,16 @@ class main(QMainWindow):
 
         #button Setup
         self.pjmbtn.clicked.connect(self.getSelectedItem)
-        self.rtnW.clicked.connect(self.rtnWindow)
+        self.rtnW.clicked.connect(self.BorrowerWindow)
 
         #Post Setup
         self.setCentralWidget(self.ui)
         #self.db.addItem("test", "5")
         self.loadItem()
 
-    def rtnWindow(self):
-        accpt = False
-
-        while(accpt == False):
-            text, ok = QInputDialog.getText(self, "Masukkan Kode", "Masukkan Kode Pijammu")
-            if ok and text:
-                items = self.db.getBorrowItem(text)
-                if items:
-                    accpt = True
-                    dlg = returnWindow(items)
-                    dlg.exec()
-                elif not items:
-                    QMessageBox.critical(self, "Error", "Kode Mu Tidak Ditemukan Di Database Kami")
-            elif ok and not text:
-                QMessageBox.critical(self, "Error", "Tolong Masukkan Kode Peminjaman")
-            else:
-                accpt = True
+    def BorrowerWindow(self):
+        dlg = borrowerWindow()
+        dlg.exec()
 
     def loadItem(self):
         items = self.db.getItem()
@@ -96,8 +60,10 @@ class main(QMainWindow):
 
             editable_item = QTableWidgetItem("0")
             editable_item.setFlags(editable_item.flags() | Qt.ItemFlag.ItemIsEditable)
-            self.table.setItem(row, 1, editable_item)
-            self.table.setItemDelegate(numericDelegate(total, row, 1))
+            spinbox = QSpinBox()
+            spinbox.setMinimum(0)
+            spinbox.setMaximum(total)
+            self.table.setCellWidget(row, 1, spinbox)
 
     def getSelectedItem(self):
         date = datetime.now()
@@ -112,7 +78,8 @@ class main(QMainWindow):
                 if item != None and int(item.text()) > 0:
                     data = self.table.item(row, 2)
                     if data.checkState() == Qt.CheckState.Checked:
-                        amnt = int(self.table.item(row, 1).text())
+                        spinbox = self.table.cellWidget(row, 1)
+                        amnt = spinbox.value()
                         if amnt > 0:
                             items[data.text()] = amnt
                         else:
@@ -121,6 +88,7 @@ class main(QMainWindow):
             if len(items) > 0 and error == False:
                 key = self.randomKeyCode()
                 self.db.borrowItem(items, key, formatDate, text)
+                self.loadItem()
                 QMessageBox.information(self, "Kode Pijam", f"Kode Pijammu Adalah '{key}' SIMPAN DENGAN BAIK")
             elif error:
                 QMessageBox.critical(self, "Error", "Tolong Masukkan Jumlah Item Yang Ingin Dipijam")
@@ -141,10 +109,93 @@ class main(QMainWindow):
             return os.path.join(sys._MEIPASS, relative_path)
         return os.path.join(os.path.abspath("."), relative_path)
 
-class returnWindow(QDialog):
-    def __init__(self, items):
+class borrowerWindow(QDialog):
+    def __init__(self):
         super().__init__()
-        self.items = items
+        #Windows Setup
+        self.setWindowTitle("Peminjam Barang")
+        self.setGeometry(100, 100, 500, 400)
+        
+        #File/DB
+        loader = QUiLoader()
+        file = QFile(self.resource_path("Ui/borrower.ui"))
+        file.open(QFile.ReadOnly)
+        self.ui = loader.load(file, self)
+        file.close()
+        self.db = Storage.Storage()
+
+        #Item Referencing
+        self.table = self.ui.findChild(type(self.ui.ItemSelect), "ItemSelect")
+        self.borrowLabel = self.ui.findChild(type(self.ui.borrowLabel), "borrowLabel")
+        self.searchBar = self.ui.findChild(type(self.ui.SearchBar), "SearchBar")
+        self.codebtn = self.ui.findChild(type(self.ui.CodeBtn), "CodeBtn")
+
+        #Load Thing
+        self.loadBorrower()
+        self.table.itemClicked.connect(self.selectBorrower)
+        self.searchBar.textChanged.connect(self.SearchBorrower)
+        self.codebtn.clicked.connect(self.rtnWindow)
+
+        #Post Load
+        layouts = QVBoxLayout()
+        layouts.addWidget(self.ui)
+        self.setLayout(layouts)
+
+    def rtnWindow(self):
+        accpt = False
+
+        while(accpt == False):
+            text, ok = QInputDialog.getText(self, "Masukkan Kode", "Masukkan Kode Pijammu")
+            if ok and text:
+                items = self.db.getBorrowItem(text)
+                if items:
+                    accpt = True
+                    dlg = returnWindow(text)
+                    dlg.exec()
+                elif not items:
+                    QMessageBox.critical(self, "Error", "Kode Mu Tidak Ditemukan Di Database Kami")
+            elif ok and not text:
+                QMessageBox.critical(self, "Error", "Tolong Masukkan Kode Peminjaman")
+            else:
+                accpt = True
+
+    def SearchBorrower(self, text):
+        if(text == None):
+            return
+        
+        for row in range(self.table.rowCount()):
+            match = False
+            item = self.table.item(row, 0)
+            if item and text.lower() in item.text().lower():
+                match = True
+
+            self.table.setRowHidden(row, not match)
+
+    def loadBorrower(self):
+        borrowers = self.db.getBorrower()
+        self.table.setRowCount(len(borrowers))
+        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        
+        for row, (name, key) in enumerate(borrowers):
+            borrower = QTableWidgetItem(name)
+            borrower.setData(Qt.UserRole, key)
+            borrower.setData(Qt.UserRole + 1, name)
+            self.table.setItem(row, 0, borrower)
+
+    def selectBorrower(self, item):
+        key = item.data(Qt.UserRole)
+        dlg = returnWindow(key)
+        dlg.exec()
+
+    def resource_path(self, relative_path):
+        if hasattr(sys, "_MEIPASS"):
+            return os.path.join(sys._MEIPASS, relative_path)
+        return os.path.join(os.path.abspath("."), relative_path)
+
+class returnWindow(QDialog):
+    def __init__(self, key):
+        super().__init__()
+        self.key = key
         #Windows Setup
         self.setWindowTitle("Kembalikan Barang")
         self.setGeometry(100, 100, 500, 400)
@@ -172,15 +223,16 @@ class returnWindow(QDialog):
         self.setLayout(layouts)
 
     def loadBorrowItem(self):
-        items = self.items
+        items = self.db.getBorrowItem(self.key)
         self.table.setRowCount(len(items))
         self.table.setEditTriggers(
             QAbstractItemView.EditTrigger.DoubleClicked |
             QAbstractItemView.EditTrigger.SelectedClicked
         )
 
-        for row, (_, id, total, date) in enumerate(items):
-            item = QTableWidgetItem(str(id))
+        for row, (_, itemName, total, date, id) in enumerate(items):
+            item = QTableWidgetItem(str(itemName))
+            item.setData(Qt.UserRole, id)
             item.setCheckState(Qt.CheckState.Unchecked)
             item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table.setItem(row, 2, item)
@@ -192,7 +244,10 @@ class returnWindow(QDialog):
             editable_item = QTableWidgetItem("0")
             editable_item.setFlags(editable_item.flags() | Qt.ItemFlag.ItemIsEditable)
             self.table.setItem(row, 1, editable_item)
-            self.table.setItemDelegate(numericDelegate(total, row, 1))
+            spinbox = QSpinBox()
+            spinbox.setMinimum(0)
+            spinbox.setMaximum(total)
+            self.table.setCellWidget(row, 1, spinbox)
             _date = date
 
         self.borrowLabel.setText(f"Pilih Item Yang Anda Pijam Pada {_date} Dan Ingin Dikembalikan")
@@ -208,15 +263,19 @@ class returnWindow(QDialog):
             if item != None and int(item.text()) > 0:
                 data = self.table.item(row, 2)
                 if data.checkState() == Qt.CheckState.Checked:
-                    amnt = int(self.table.item(row, 1).text())
+                    amnt = self.table.cellWidget(row, 1).value()
+                    id = data.data(Qt.UserRole)
                     if amnt > 0:
-                        items[data.text()] = amnt
+                        itemdata = (amnt, id)
+                        items[data.text()] = itemdata
                     else:
                         error = True
 
         if len(items) > 0 and error == False:
             self.db.returnItem(items, formatDate)
-            QMessageBox.information(self, "Terimakasih", f"Terimakasih Telah Mengembalikan")
+            QMessageBox.information(self, "Terimakasih", "Terimakasih Telah Mengembalikan")
+            self.main = main()
+            self.main.refreshTable()
         elif error:
             QMessageBox.critical(self, "Error", "Tolong Masukkan Jumlah Item Yang Ingin Dipijam")
         else:
