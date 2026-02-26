@@ -35,7 +35,6 @@ class Storage():
 
         self.conn.commit()
         self.conn.close()
-        print("Succes Create DB")
         
     def is_frozen(self):
         return getattr(sys, "frozen", False)
@@ -96,8 +95,8 @@ class Storage():
                 UPDATE borrowitem SET tanggal_kembali = ? WHERE nama_item = ?
             """,(date, item))
 
-            conn.commit()
-            conn.close()
+        conn.commit()
+        conn.close()
 
     # Borrow
     def borrowItem(self, items, key, date, peminjam):

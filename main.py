@@ -36,24 +36,6 @@ class main(QMainWindow):
         #self.db.addItem("test", "5")
         self.loadItem()
 
-    def rtnWindow(self):
-        accpt = False
-
-        while(accpt == False):
-            text, ok = QInputDialog.getText(self, "Masukkan Kode", "Masukkan Kode Pijammu")
-            if ok and text:
-                items = self.db.getBorrowItem(text)
-                if items:
-                    accpt = True
-                    dlg = returnWindow(items)
-                    dlg.exec()
-                elif not items:
-                    QMessageBox.critical(self, "Error", "Kode Mu Tidak Ditemukan Di Database Kami")
-            elif ok and not text:
-                QMessageBox.critical(self, "Error", "Tolong Masukkan Kode Peminjaman")
-            else:
-                accpt = True
-
     def BorrowerWindow(self):
         dlg = borrowerWindow()
         dlg.exec()
@@ -145,15 +127,49 @@ class borrowerWindow(QDialog):
         #Item Referencing
         self.table = self.ui.findChild(type(self.ui.ItemSelect), "ItemSelect")
         self.borrowLabel = self.ui.findChild(type(self.ui.borrowLabel), "borrowLabel")
+        self.searchBar = self.ui.findChild(type(self.ui.SearchBar), "SearchBar")
+        self.codebtn = self.ui.findChild(type(self.ui.CodeBtn), "CodeBtn")
 
         #Load Thing
         self.loadBorrower()
         self.table.itemClicked.connect(self.selectBorrower)
+        self.searchBar.textChanged.connect(self.SearchBorrower)
+        self.codebtn.clicked.connect(self.rtnWindow)
 
         #Post Load
         layouts = QVBoxLayout()
         layouts.addWidget(self.ui)
         self.setLayout(layouts)
+
+    def rtnWindow(self):
+        accpt = False
+
+        while(accpt == False):
+            text, ok = QInputDialog.getText(self, "Masukkan Kode", "Masukkan Kode Pijammu")
+            if ok and text:
+                items = self.db.getBorrowItem(text)
+                if items:
+                    accpt = True
+                    dlg = returnWindow(text)
+                    dlg.exec()
+                elif not items:
+                    QMessageBox.critical(self, "Error", "Kode Mu Tidak Ditemukan Di Database Kami")
+            elif ok and not text:
+                QMessageBox.critical(self, "Error", "Tolong Masukkan Kode Peminjaman")
+            else:
+                accpt = True
+
+    def SearchBorrower(self, text):
+        if(text == None):
+            return
+        
+        for row in range(self.table.rowCount()):
+            match = False
+            item = self.table.item(row, 0)
+            if item and text.lower() in item.text().lower():
+                match = True
+
+            self.table.setRowHidden(row, not match)
 
     def loadBorrower(self):
         borrowers = self.db.getBorrower()
@@ -168,8 +184,7 @@ class borrowerWindow(QDialog):
 
     def selectBorrower(self, item):
         key = item.data(Qt.UserRole)
-        items = self.db.getBorrowItem(key)
-        dlg = returnWindow(items)
+        dlg = returnWindow(key)
         dlg.exec()
 
     def resource_path(self, relative_path):
@@ -178,9 +193,9 @@ class borrowerWindow(QDialog):
         return os.path.join(os.path.abspath("."), relative_path)
 
 class returnWindow(QDialog):
-    def __init__(self, items):
+    def __init__(self, key):
         super().__init__()
-        self.items = items
+        self.key = key
         #Windows Setup
         self.setWindowTitle("Kembalikan Barang")
         self.setGeometry(100, 100, 500, 400)
@@ -208,7 +223,7 @@ class returnWindow(QDialog):
         self.setLayout(layouts)
 
     def loadBorrowItem(self):
-        items = self.items
+        items = self.db.getBorrowItem(self.key)
         self.table.setRowCount(len(items))
         self.table.setEditTriggers(
             QAbstractItemView.EditTrigger.DoubleClicked |
@@ -259,6 +274,8 @@ class returnWindow(QDialog):
         if len(items) > 0 and error == False:
             self.db.returnItem(items, formatDate)
             QMessageBox.information(self, "Terimakasih", "Terimakasih Telah Mengembalikan")
+            self.main = main()
+            self.main.refreshTable()
         elif error:
             QMessageBox.critical(self, "Error", "Tolong Masukkan Jumlah Item Yang Ingin Dipijam")
         else:
