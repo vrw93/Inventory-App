@@ -144,7 +144,7 @@ class Storage():
         c = conn.cursor()
 
         c.execute("""
-            SELECT nama_peminjam, key FROM borrow
+            SELECT nama_peminjam, key, tanggal_pinjam FROM borrow
             ORDER BY nama_peminjam DESC
         """)
 
