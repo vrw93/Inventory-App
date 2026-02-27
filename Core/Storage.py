@@ -128,7 +128,7 @@ class Storage():
         c = conn.cursor()
 
         c.execute("""
-            SELECT borrow.key, borrowitem.nama_item, borrowitem.amount, borrowitem.tanggal_pinjam, borrowitem.id
+            SELECT borrow.key, borrowitem.nama_item, borrowitem.amount, borrowitem.tanggal_pinjam, borrowitem.id, borrowitem.tanggal_kembali
             FROM borrow
             INNER JOIN borrowitem ON borrow.id = borrowitem.peminjam_id
             WHERE borrow.key = ?
