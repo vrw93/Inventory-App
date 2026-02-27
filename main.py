@@ -197,14 +197,16 @@ class returnWindow(QDialog):
             QAbstractItemView.EditTrigger.SelectedClicked
         )
 
-        for row, (_, itemName, total, date, id, _) in enumerate(items):
+        for row, (_, itemName, total, date, id, _, tBack) in enumerate(items):
             item = QTableWidgetItem(str(itemName))
             item.setData(Qt.UserRole, id)
             item.setCheckState(Qt.CheckState.Unchecked)
             item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table.setItem(row, 2, item)
 
-            _total = QTableWidgetItem(str(total))
+            if tBack is None:
+                tBack = 0
+            _total = QTableWidgetItem(str(total - tBack))
             _total.setFlags(_total.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table.setItem(row, 0, _total)
 
@@ -242,6 +244,7 @@ class returnWindow(QDialog):
             self.db.returnItem(items, formatDate)
             QMessageBox.information(self, "Terimakasih", "Terimakasih Telah Mengembalikan")
             self.main.loadItem()
+            self.loadBorrowItem()
         elif error:
             QMessageBox.critical(self, "Error", "Tolong Masukkan Jumlah Item Yang Ingin Dipijam")
         else:

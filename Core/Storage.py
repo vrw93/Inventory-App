@@ -29,6 +29,7 @@ class Storage():
             tanggal_pinjam TEXT,
             tanggal_kembali TEXT,
             amount INTEGER,
+            amount_back INTEGER,
             FOREIGN KEY (peminjam_id) REFERENCES borrow(id)
         )
         """)
@@ -36,6 +37,14 @@ class Storage():
         self.conn.commit()
         self.conn.close()
         
+    def delItem(self, name):
+        conn = self.getDB()
+        c = conn.cursor()
+        c.execute("""
+            DELETE FROM item WHERE id = ?""", (name, ))
+        conn.commit()
+        conn.close()
+
     def is_frozen(self):
         return getattr(sys, "frozen", False)
 
@@ -88,7 +97,7 @@ class Storage():
             """, (amount, item))
 
             c.execute("""
-                UPDATE borrowitem SET amount = amount - ? WHERE id = ?
+                UPDATE borrowitem SET amount_back = ? WHERE id = ?
             """,(amount, id))
 
             c.execute("""
@@ -128,7 +137,9 @@ class Storage():
         c = conn.cursor()
 
         c.execute("""
-            SELECT borrow.key, borrowitem.nama_item, borrowitem.amount, borrowitem.tanggal_pinjam, borrowitem.id, borrowitem.tanggal_kembali
+            SELECT borrow.key, borrowitem.nama_item, borrowitem.amount, 
+            borrowitem.tanggal_pinjam, borrowitem.id, 
+            borrowitem.tanggal_kembali, borrowitem.amount_back
             FROM borrow
             INNER JOIN borrowitem ON borrow.id = borrowitem.peminjam_id
             WHERE borrow.key = ?
