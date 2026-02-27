@@ -27,6 +27,7 @@
 - Git
 - VS code
 - Pyside6 Designer
+- PyInstaller
 ### Target Platform
 - Windows 10
 - Windows 11
