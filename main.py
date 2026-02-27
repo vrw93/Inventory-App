@@ -197,7 +197,7 @@ class returnWindow(QDialog):
             QAbstractItemView.EditTrigger.SelectedClicked
         )
 
-        for row, (_, itemName, total, date, id) in enumerate(items):
+        for row, (_, itemName, total, date, id, _) in enumerate(items):
             item = QTableWidgetItem(str(itemName))
             item.setData(Qt.UserRole, id)
             item.setCheckState(Qt.CheckState.Unchecked)
