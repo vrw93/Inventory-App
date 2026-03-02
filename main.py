@@ -50,7 +50,7 @@ class main(QMainWindow):
         )
 
         for row, (id, total) in enumerate(items):
-            item = QTableWidgetItem(str(id))
+            item = QTableWidgetItem(str(id.capitalize()))
             item.setCheckState(Qt.CheckState.Unchecked)
             item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table.setItem(row, 2, item)
@@ -198,7 +198,7 @@ class returnWindow(QDialog):
         )
 
         for row, (_, itemName, total, date, id, _, tBack) in enumerate(items):
-            item = QTableWidgetItem(str(itemName))
+            item = QTableWidgetItem(str(itemName.capitalize()))
             item.setData(Qt.UserRole, id)
             item.setCheckState(Qt.CheckState.Unchecked)
             item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)

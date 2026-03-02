@@ -8,7 +8,7 @@ class Storage():
         self.c.execute("""
         CREATE TABLE IF NOT EXISTS item (
             id TEXT PRIMARY KEY,
-            total INTEGER
+            total INTEGER NOT NULL CHECK(total >= 0)
         )
         """)
 
@@ -37,12 +37,25 @@ class Storage():
         self.conn.commit()
         self.conn.close()
         
-    def delItem(self, name):
+    def delItem(self, name, amount: int):
         conn = self.getDB()
+        conn.execute("PRAGMA foreign_keys = ON")
         c = conn.cursor()
-        c.execute("""
-            DELETE FROM item WHERE id = ?""", (name, ))
-        conn.commit()
+        conn.execute("BEGIN")
+        try:
+            c.execute("""
+                UPDATE item SET total = total - ?
+                WHERE id = ? AND total > ?
+            """, (amount, name, amount))
+
+            if c.rowcount == 0:
+                c.execute("""
+                    DELETE FROM item WHERE id = ? AND total <= ?
+                    """, (name, amount))
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
         conn.close()
 
     def is_frozen(self):
@@ -67,12 +80,11 @@ class Storage():
             INSERT INTO item (id, total)
             VALUES (?, ?)
             ON CONFLICT(id)
-            DO UPDATE SET total = excluded.total
+            DO UPDATE SET total = total + excluded.total
         """,(name, total))
 
         self.conn.commit()
         self.conn.close()
-        print(f"Sukses menambah {name} dengan value {total}")
 
     def getItem(self):
         self.conn = self.getDB()

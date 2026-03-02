@@ -8,6 +8,9 @@ import sys, os
 class main(QMainWindow):
     def __init__(self):
         super().__init__()
+        #Variable
+        self.itemTotals = {}
+
         #Windows Setup
         self.setWindowTitle("Aplikasi Inventaris[Admin]")
         self.setGeometry(100, 100, 800, 600)
@@ -44,9 +47,9 @@ class main(QMainWindow):
         while(not accpt):
             name, ok = QInputDialog.getText(self, "Tambah Item", "Nama Item:")
             if name and ok:
-                total, ok = QInputDialog.getInt(self, "Tambah Item", "Total Item:", minValue=0)
+                total, ok = QInputDialog.getInt(self, "Tambah Item", "Total Item:", minValue=1)
                 if ok and total > 0:
-                    self.db.addItem(name, total)
+                    self.db.addItem(name.lower(), total)
                     self.loadItem()
                     accpt = True
                     QMessageBox.information(self, "Sukses", f"Item '{name}' berhasil ditambahkan dengan total {total}.")
@@ -64,9 +67,11 @@ class main(QMainWindow):
         while(not accpt):
             item,ok = QInputDialog.getItem(self, "Hapus Item", "Nama Item yang ingin dihapus:", self.itemsName) 
             if item and ok:
-                self.db.delItem(item)
-                self.loadItem()
-                accpt = True
+                amount, ok = QInputDialog.getInt(self, "Hapus Item", f"Jumlah item '{item}' yang ingin dihapus:", minValue=1, maxValue=int(self.itemTotals[item].text()))
+                if ok and amount > 0:
+                    self.db.delItem(item, amount)
+                    self.loadItem()
+                    accpt = True
             else:
                 accpt = True
 
@@ -89,12 +94,13 @@ class main(QMainWindow):
         self.tableI.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         for row, (name, total) in enumerate(items):
-            item = QTableWidgetItem(name)
+            item = QTableWidgetItem(name.capitalize())
             self.tableI.setItem(row, 0, item)
             self.itemsName.append(name)
 
             total = QTableWidgetItem(str(total))
             self.tableI.setItem(row, 1, total)
+            self.itemTotals[name] = total
 
     def loadBorrower(self):
         borrowers = self.db.getBorrower()
@@ -158,7 +164,7 @@ class itemBorrowedWindow(QDialog):
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         for row, (_, itemName, tBorrow, dateP, _, dateK, tBack) in enumerate(items):
-            item = QTableWidgetItem(str(itemName))
+            item = QTableWidgetItem(str(itemName.capitalize()))
             self.table.setItem(row, 0, item)
 
             total = tBorrow - (tBack if tBack is not None else 0)
@@ -172,7 +178,10 @@ class itemBorrowedWindow(QDialog):
             tanggalPinjam = QTableWidgetItem(dateP)
             self.table.setItem(row, 2, tanggalPinjam)
     
-            tanggalKembali = QTableWidgetItem(f"{dateK} kembali {tBack}")
+            if dateK is not None and tBack is not None:
+                tanggalKembali = QTableWidgetItem(f"{dateK} kembali {tBack}")
+            else:
+                tanggalKembali = QTableWidgetItem("Belum dikembalikan")
             self.table.setItem(row, 3, tanggalKembali)
 
     def resource_path(self, relative_path):
