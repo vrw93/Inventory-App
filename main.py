@@ -21,6 +21,7 @@ class main(QMainWindow):
         self.ui = loader.load(file, self)
         file.close()
         self.db = Storage.Storage()
+        self.loadStyle()
 
         #Item Referencing
         self.table = self.ui.findChild(type(self.ui.ItemSelect), "ItemSelect")
@@ -41,6 +42,10 @@ class main(QMainWindow):
         self.loadBorrower()
         self.loadItem()
 
+    def loadStyle(self):
+        with open(self.resource_path("Ui/Style/main.qss"), "r") as f:
+            self.setStyleSheet(f.read())
+
     def loadItem(self):
         items = self.db.getItem()
         self.table.setRowCount(len(items))
@@ -50,7 +55,7 @@ class main(QMainWindow):
         )
 
         for row, (id, total) in enumerate(items):
-            item = QTableWidgetItem(str(id))
+            item = QTableWidgetItem(str(id.capitalize()))
             item.setCheckState(Qt.CheckState.Unchecked)
             item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table.setItem(row, 2, item)
@@ -82,7 +87,7 @@ class main(QMainWindow):
                         spinbox = self.table.cellWidget(row, 1)
                         amnt = spinbox.value()
                         if amnt > 0:
-                            items[data.text()] = amnt
+                            items[data.text().lower()] = amnt
                         else:
                             error = True
 
@@ -96,7 +101,7 @@ class main(QMainWindow):
                 QMessageBox.critical(self, "Error", "Tolong Masukkan Jumlah Item Yang Ingin Dipijam")
             else:
                 QMessageBox.critical(self, "Error", "Tolong Memilih Setidaknya 1 Item")
-        else:
+        elif not text and ok:
             QMessageBox.critical(self, "Error", "Tolong Masukkan Nama Peminjam")
 
     def randomKeyCode(self):
@@ -174,6 +179,7 @@ class returnWindow(QDialog):
         self.ui = loader.load(file, self)
         file.close()
         self.db = Storage.Storage()
+        self.loadStyle()
 
         #Item Referencing
         self.table = self.ui.findChild(type(self.ui.ItemSelect), "ItemSelect")
@@ -189,6 +195,10 @@ class returnWindow(QDialog):
         layouts.addWidget(self.ui)
         self.setLayout(layouts)
 
+    def loadStyle(self):
+        with open(self.resource_path("Ui/Style/main.qss"), "r") as f:
+            self.setStyleSheet(f.read())
+
     def loadBorrowItem(self):
         items = self.db.getBorrowItem(self.key)
         self.table.setRowCount(len(items))
@@ -198,7 +208,7 @@ class returnWindow(QDialog):
         )
 
         for row, (_, itemName, total, date, id, _, tBack) in enumerate(items):
-            item = QTableWidgetItem(str(itemName))
+            item = QTableWidgetItem(str(itemName.capitalize()))
             item.setData(Qt.UserRole, id)
             item.setCheckState(Qt.CheckState.Unchecked)
             item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
@@ -236,7 +246,7 @@ class returnWindow(QDialog):
                     id = data.data(Qt.UserRole)
                     if amnt > 0:
                         itemdata = (amnt, id)
-                        items[data.text()] = itemdata
+                        items[data.text().lower()] = itemdata
                     else:
                         error = True
 
