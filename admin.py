@@ -21,6 +21,7 @@ class main(QMainWindow):
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self)
         file.close()
+        self.loadStyle()
         self.db = Storage()
 
         #Reference
@@ -40,6 +41,11 @@ class main(QMainWindow):
         self.setCentralWidget(self.ui)
         self.loadBorrower()
         self.loadItem()
+
+    def loadStyle(self):
+        with open(self.resource_path("Ui/Style/main.qss"), "r") as f:
+            self.setStyleSheet(f.read())
+
 
     def addItem(self):
         accpt = False
