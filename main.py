@@ -3,7 +3,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QTableWidgetItem,
 QAbstractItemView, QMessageBox, QInputDialog, QDialog, QVBoxLayout, 
 QSpinBox)
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QFile, Qt
+from PySide6.QtCore import QFile, Qt, QSettings
 from Core import Storage
 from datetime import datetime
 
@@ -13,15 +13,17 @@ class main(QMainWindow):
         #Windows Setup
         self.setWindowTitle("Aplikasi Inventaris")
         self.setGeometry(100, 100, 800, 600)
-        
-        #File/DB
+
+        #Settings
+        self.settings = QSettings("VrwDev", "Inventory_App")
+
+        #UI & DB
         loader = QUiLoader()
         file = QFile(self.resource_path("Ui/main.ui"))
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self)
         file.close()
         self.db = Storage.Storage()
-        self.loadStyle()
 
         #Item Referencing
         self.table = self.ui.findChild(type(self.ui.ItemSelect), "ItemSelect")
@@ -30,21 +32,45 @@ class main(QMainWindow):
         self.borrowLabel = self.ui.findChild(type(self.ui.borrowLabel), "borrowLabel")
         self.searchBar = self.ui.findChild(type(self.ui.SearchBar), "SearchBar")
         self.codebtn = self.ui.findChild(type(self.ui.CodeBtn), "CodeBtn")
+        self.themeSwitcher = self.ui.findChild(type(self.ui.ThemeSwitcher), "ThemeSwitcher")
 
         #button Setup
         self.pjmbtn.clicked.connect(self.getSelectedItem)
         self.tableB.itemClicked.connect(self.selectBorrower)
         self.searchBar.textChanged.connect(self.SearchBorrower)
         self.codebtn.clicked.connect(self.rtnWindow)
+        self.themeSwitcher.clicked.connect(self.themeSwitch)
 
         #Post Setup
         self.setCentralWidget(self.ui)
         self.loadBorrower()
         self.loadItem()
+        ##theme
+        theme = self.settings.value("UI/theme", "main")
+        self.loadStyle(theme)
 
-    def loadStyle(self):
-        with open(self.resource_path("Ui/Style/main.qss"), "r") as f:
+    def themeSwitch(self):
+        if self.theme == "main":
+            self.loadStyle("mainLight")
+            self.settings.beginGroup("UI")
+            self.settings.setValue("theme", "mainLight")
+            self.settings.endGroup()
+            self.settings.sync()
+        elif self.theme == "mainLight":
+            self.loadStyle("main")
+            self.settings.beginGroup("UI")
+            self.settings.setValue("theme", "main")
+            self.settings.endGroup()
+            self.settings.sync()
+
+    def loadStyle(self, name:str):
+        with open(self.resource_path(f"Ui/Style/{name}.qss"), "r") as f:
             self.setStyleSheet(f.read())
+            self.theme = name
+            if name == "main":
+                self.themeSwitcher.setText("Light")
+            else:
+                self.themeSwitcher.setText("Dark")
 
     def loadItem(self):
         items = self.db.getItem()
@@ -126,7 +152,7 @@ class main(QMainWindow):
                 items = self.db.getBorrowItem(text)
                 if items:
                     accpt = True
-                    dlg = returnWindow(text, self)
+                    dlg = returnWindow(text, self, self.theme)
                     dlg.exec()
                 elif not items:
                     QMessageBox.critical(self, "Error", "Kode Mu Tidak Ditemukan Di Database Kami")
@@ -160,14 +186,15 @@ class main(QMainWindow):
 
     def selectBorrower(self, item):
         key = item.data(Qt.UserRole)
-        dlg = returnWindow(key, self)
+        dlg = returnWindow(key, self, self.theme)
         dlg.exec()
 
 class returnWindow(QDialog):
-    def __init__(self, key, main):
+    def __init__(self, key, main, theme):
         super().__init__()
         self.key = key
         self.main = main
+        self.theme = theme
         #Windows Setup
         self.setWindowTitle("Kembalikan Barang")
         self.setGeometry(100, 100, 500, 400)
@@ -196,7 +223,7 @@ class returnWindow(QDialog):
         self.setLayout(layouts)
 
     def loadStyle(self):
-        with open(self.resource_path("Ui/Style/main.qss"), "r") as f:
+        with open(self.resource_path(f"Ui/Style/{self.theme}.qss"), "r") as f:
             self.setStyleSheet(f.read())
 
     def loadBorrowItem(self):
