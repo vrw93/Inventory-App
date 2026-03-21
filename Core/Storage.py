@@ -63,7 +63,7 @@ class Storage():
 
     def getDB(self):
         if self.is_frozen():
-            base = os.getenv("APPDATA")
+            base = os.getenv("APPDATA") or os.path.expanduser("~/.config")
             app_dir = os.path.join(base, "VLauncher")
         else:
             app_dir = "./Core/DB/"
