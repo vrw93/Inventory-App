@@ -2,7 +2,7 @@ from Core.Storage import Storage
 from PySide6.QtWidgets import (QMainWindow, QApplication, QAbstractItemView, QSpinBox,
 QTableWidgetItem, QDialog, QVBoxLayout, QInputDialog, QMessageBox)
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QFile, Qt
+from PySide6.QtCore import QFile, Qt, QSettings
 import sys, os
 
 class main(QMainWindow):
@@ -15,13 +15,15 @@ class main(QMainWindow):
         self.setWindowTitle("Aplikasi Inventaris[Admin]")
         self.setGeometry(100, 100, 800, 600)
         
+        #Settings
+        self.settings = QSettings("VrwDev", "Inventory_App")
+
         #File/DB
         loader = QUiLoader()
         file = QFile(self.resource_path("Ui/admin.ui"))
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self)
         file.close()
-        self.loadStyle()
         self.db = Storage()
 
         #Reference
@@ -30,21 +32,45 @@ class main(QMainWindow):
         self.tableI = self.ui.findChild(type(self.ui.ItemTable), "ItemTable")
         self.addBtn = self.ui.findChild(type(self.ui.TambahItemBtn), "TambahItemBtn")
         self.delBtn = self.ui.findChild(type(self.ui.HapusItemBtn), "HapusItemBtn")
+        self.themeSwitcher = self.ui.findChild(type(self.ui.ThemeSwitcher), "ThemeSwitcher")
 
         #Connect Thing
         self.searchBarP.textChanged.connect(self.SearchBorrower)
         self.tableP.itemClicked.connect(self.selectBorrower)
         self.addBtn.clicked.connect(self.addItem)
         self.delBtn.clicked.connect(self.delItem)
+        self.themeSwitcher.clicked.connect(self.themeSwitch)
 
         #Post Setup
         self.setCentralWidget(self.ui)
         self.loadBorrower()
         self.loadItem()
+        ##theme
+        theme = self.settings.value("UI/theme", "main")
+        self.loadStyle(theme)
 
-    def loadStyle(self):
-        with open(self.resource_path("Ui/Style/main.qss"), "r") as f:
+    def themeSwitch(self):
+        if self.theme == "main":
+            self.loadStyle("mainLight")
+            self.settings.beginGroup("UI")
+            self.settings.setValue("theme", "mainLight")
+            self.settings.endGroup()
+            self.settings.sync()
+        elif self.theme == "mainLight":
+            self.loadStyle("main")
+            self.settings.beginGroup("UI")
+            self.settings.setValue("theme", "main")
+            self.settings.endGroup()
+            self.settings.sync()
+
+    def loadStyle(self, name:str):
+        with open(self.resource_path(f"Ui/Style/{name}.qss"), "r") as f:
             self.setStyleSheet(f.read())
+            self.theme = name
+            if name == "main":
+                self.themeSwitcher.setText("Light")
+            else:
+                self.themeSwitcher.setText("Dark")
 
 
     def addItem(self):
@@ -129,7 +155,7 @@ class main(QMainWindow):
 
     def selectBorrower(self, item):
         key = item.data(Qt.UserRole)
-        dlg = itemBorrowedWindow(key)
+        dlg = itemBorrowedWindow(key, self.theme)
         dlg.exec()
 
     def resource_path(self, relative_path):
@@ -138,9 +164,10 @@ class main(QMainWindow):
         return os.path.join(os.path.abspath("."), relative_path)
 
 class itemBorrowedWindow(QDialog):
-    def __init__(self, key):
+    def __init__(self, key, theme):
         super().__init__()
         self.key = key
+        self.theme = theme
         #Windows Setup
         self.setWindowTitle("Item Window[Admin]")
         self.setGeometry(100, 100, 800, 600)
@@ -163,6 +190,11 @@ class itemBorrowedWindow(QDialog):
         layouts = QVBoxLayout()
         layouts.addWidget(self.ui)
         self.setLayout(layouts)
+        self.loadStyle()
+
+    def loadStyle(self):
+        with open(self.resource_path(f"Ui/Style/{self.theme}.qss"), "r") as f:
+            self.setStyleSheet(f.read())
 
     def loadBorrowItem(self):
         items = self.db.getBorrowItem(self.key)
