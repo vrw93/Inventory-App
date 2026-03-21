@@ -31,6 +31,7 @@
 ### Target Platform
 - Windows 10
 - Windows 11
+- Linux (Tested Only In Arch Hyprland)
 
 ## 📝 Note
 This Is **ONLY** My Hobby Project May There Was Bug In Some Early Builds
