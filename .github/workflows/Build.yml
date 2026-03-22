@@ -47,9 +47,9 @@ jobs:
 
           chmod +x AppDir-admin/AppRun
 
-      - name: Download AppImage
+      - name: Download AppImageTool
         run: |
-          wget https://github.com/AppImage/AppImageKit/releases/latest/download/appimagetool-x86_64.AppImage
+          wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool-x86_64.AppImage
 
       - name: Build AppImage (main)
