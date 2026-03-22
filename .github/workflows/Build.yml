@@ -24,8 +24,8 @@ jobs:
 
       - name: Build Binary
         run: | 
-          pyinstaller main.py --onefile --add-data="Ui:Ui"
-          pyinstaller admin.py --onefile --add-data="Ui:Ui"
+          pyinstaller main.py --onefile --add-data="Ui:Ui" --add-data="Assets:Assets"
+          pyinstaller admin.py --onefile --add-data="Ui:Ui" --add-data="Assets:Assets"
       #Build to AppImage
       - name: Make AppDir (main)
         run: |
@@ -102,8 +102,8 @@ jobs:
 
       - name: Build EXE (admin & main)
         run: |
-          pyinstaller main.py --onefile --add-data="Ui;Ui" --icon="Assets/icon.ico"
-          pyinstaller admin.py --onefile --add-data="Ui;Ui" --icon="Assets/icon.ico"
+          pyinstaller main.py --onefile --add-data="Ui;Ui" --icon="Assets/icon.ico" --add-data="Assets;Assets"
+          pyinstaller admin.py --onefile --add-data="Ui;Ui" --icon="Assets/icon.ico" --add-data="Assets;Assets"
 
       - name: Upload
         uses: actions/upload-artifact@v4
