@@ -51,7 +51,7 @@ jobs:
           cp dist/admin AppDir-admin/usr/bin/
 
           echo '#!/bin/bash
-          exec "$(dirname "$0")/usr/bin/main"' > AppDir-admin/AppRun
+          exec "$(dirname "$0")/usr/bin/admin"' > AppDir-admin/AppRun
 
           chmod +x AppDir-admin/AppRun
           cp Assets/icon.png AppDir-admin/inventory.png
