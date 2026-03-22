@@ -219,3 +219,6 @@ __marimo__/
 *.db
 Core/DB/DataBase.db
 Core/DB/DataBase.db
+
+#debugging
+test.py

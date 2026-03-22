@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>594</width>
+    <width>905</width>
     <height>452</height>
    </rect>
   </property>
@@ -16,14 +16,90 @@
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="3" column="1">
+     <property name="sizeConstraint">
+      <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
+     </property>
+     <item row="6" column="4" rowspan="2">
+      <widget class="QPushButton" name="CodeBtn">
+       <property name="text">
+        <string>Masukkan Kode</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="4">
+      <widget class="QLineEdit" name="SearchBar">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="placeholderText">
+        <string>Cari Nama Peminjam</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="5">
+      <layout class="QGridLayout" name="gridLayout_2"/>
+     </item>
+     <item row="1" column="4">
+      <widget class="QLabel" name="borrowLabel">
+       <property name="text">
+        <string>List Peminjam, klik untuk memilih atau masukkan kode</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="4">
+      <widget class="QTableWidget" name="ItemSelect_2">
+       <attribute name="horizontalHeaderStretchLastSection">
+        <bool>true</bool>
+       </attribute>
+       <row/>
+       <column>
+        <property name="text">
+         <string>Nama Peminjam</string>
+        </property>
+       </column>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="6" column="1" rowspan="2">
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="6" column="2" rowspan="2" colspan="2">
       <widget class="QPushButton" name="PijamBtn">
        <property name="text">
         <string>Pijam</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="0" colspan="2">
+     <item row="6" column="0">
+      <widget class="QPushButton" name="ThemeSwitcher">
+       <property name="text">
+        <string>Light/Dark</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0" rowspan="4" colspan="4">
       <widget class="QTableWidget" name="ItemSelect">
        <property name="sizeAdjustPolicy">
         <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents</enum>
@@ -41,7 +117,7 @@
         <bool>false</bool>
        </attribute>
        <attribute name="horizontalHeaderDefaultSectionSize">
-        <number>32</number>
+        <number>40</number>
        </attribute>
        <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
         <bool>false</bool>
@@ -96,13 +172,6 @@
       <widget class="QLabel" name="label">
        <property name="text">
         <string>Pilih Item Yang Ingin Dipinjam</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QPushButton" name="RtnWindow">
-       <property name="text">
-        <string>Kembalikan Barang</string>
        </property>
       </widget>
      </item>

@@ -8,7 +8,7 @@ class Storage():
         self.c.execute("""
         CREATE TABLE IF NOT EXISTS item (
             id TEXT PRIMARY KEY,
-            total INTEGER
+            total INTEGER NOT NULL CHECK(total >= 0)
         )
         """)
 
@@ -29,20 +29,41 @@ class Storage():
             tanggal_pinjam TEXT,
             tanggal_kembali TEXT,
             amount INTEGER,
+            amount_back INTEGER,
             FOREIGN KEY (peminjam_id) REFERENCES borrow(id)
         )
         """)
 
         self.conn.commit()
         self.conn.close()
-        print("Succes Create DB")
         
+    def delItem(self, name, amount: int):
+        conn = self.getDB()
+        conn.execute("PRAGMA foreign_keys = ON")
+        c = conn.cursor()
+        conn.execute("BEGIN")
+        try:
+            c.execute("""
+                UPDATE item SET total = total - ?
+                WHERE id = ? AND total > ?
+            """, (amount, name, amount))
+
+            if c.rowcount == 0:
+                c.execute("""
+                    DELETE FROM item WHERE id = ? AND total <= ?
+                    """, (name, amount))
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        conn.close()
+
     def is_frozen(self):
         return getattr(sys, "frozen", False)
 
     def getDB(self):
         if self.is_frozen():
-            base = os.getenv("APPDATA")
+            base = os.getenv("APPDATA") or os.path.expanduser("~/.config")
             app_dir = os.path.join(base, "VLauncher")
         else:
             app_dir = "./Core/DB/"
@@ -59,12 +80,11 @@ class Storage():
             INSERT INTO item (id, total)
             VALUES (?, ?)
             ON CONFLICT(id)
-            DO UPDATE SET total = excluded.total
+            DO UPDATE SET total = total + excluded.total
         """,(name, total))
 
         self.conn.commit()
         self.conn.close()
-        print(f"Sukses menambah {name} dengan value {total}")
 
     def getItem(self):
         self.conn = self.getDB()
@@ -83,22 +103,23 @@ class Storage():
         conn = self.getDB()
         c = conn.cursor()
 
-        for item, amount in items.items():
+        for item, (amount, id) in items.items():
             c.execute("""
                 UPDATE item SET total = total + ? WHERE id = ?
             """, (amount, item))
 
             c.execute("""
-                UPDATE borrowitem SET amount = amount - ? WHERE nama_item = ?
-            """,(amount, item))
+                UPDATE borrowitem SET amount_back = ? WHERE id = ?
+            """,(amount, id))
 
             c.execute("""
                 UPDATE borrowitem SET tanggal_kembali = ? WHERE nama_item = ?
             """,(date, item))
 
-            conn.commit()
-            conn.close()
+        conn.commit()
+        conn.close()
 
+    # Borrow
     def borrowItem(self, items, key, date, peminjam):
         conn = self.getDB()
         c = conn.cursor()
@@ -128,11 +149,27 @@ class Storage():
         c = conn.cursor()
 
         c.execute("""
-            SELECT borrow.key, borrowitem.nama_item, borrowitem.amount, borrowitem.tanggal_pinjam
+            SELECT borrow.key, borrowitem.nama_item, borrowitem.amount, 
+            borrowitem.tanggal_pinjam, borrowitem.id, 
+            borrowitem.tanggal_kembali, borrowitem.amount_back
             FROM borrow
             INNER JOIN borrowitem ON borrow.id = borrowitem.peminjam_id
             WHERE borrow.key = ?
         """, (key, ))
+
+        rows = c.fetchall()
+        c.close()
+        conn.close()
+        return rows
+    
+    def getBorrower(self):
+        conn = self.getDB()
+        c = conn.cursor()
+
+        c.execute("""
+            SELECT nama_peminjam, key, tanggal_pinjam FROM borrow
+            ORDER BY nama_peminjam DESC
+        """)
 
         rows = c.fetchall()
         c.close()
