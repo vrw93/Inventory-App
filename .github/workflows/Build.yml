@@ -37,6 +37,16 @@ jobs:
 
           chmod +x AppDir-main/AppRun
 
+          mkdir -p AppDir-main/usr/share/icons/hicolor/256x256/apps
+          cp Assets/icon.png AppDir-main/usr/share/icons/hicolor/256x256/apps/inventory.png
+
+          echo "[Desktop Entry]
+          Name=InventoryApp
+          Exec=main
+          Icon=inventory
+          Type=Application
+          Categories=Utility;" > AppDir-main/InventoryApp.desktop
+
       - name: Make AppDir (admin)
         run: |
           mkdir -p AppDir-admin/usr/bin
@@ -47,18 +57,30 @@ jobs:
 
           chmod +x AppDir-admin/AppRun
 
+          mkdir -p AppDir-admin/usr/share/icons/hicolor/256x256/apps
+          cp Assets/icon.png AppDir-admin/usr/share/icons/hicolor/256x256/apps/inventory.png
+
+          echo "[Desktop Entry]
+          Name=InventoryApp[admin]
+          Exec=admin
+          Icon=inventory
+          Type=Application
+          Categories=Utility;" > AppDir-admin/InventoryApp.desktop
+
       - name: Download AppImageTool And Setup
         run: |
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool-x86_64.AppImage
-          sudo apt-get update
-          sudo apt-get install -y fuse libfuse2
 
       - name: Build AppImage (main)
-        run: ./appimagetool-x86_64.AppImage AppDir-main InventoryApp.AppImage
+        run: |
+            export APPIMAGE_EXTRACT_AND_RUN=1
+            ./appimagetool-x86_64.AppImage AppDir-main InventoryApp.AppImage
 
       - name: Build AppImage (admin)
-        run: ./appimagetool-x86_64.AppImage AppDir-admin InventoryApp[Admin].AppImage
+        run: |
+            export APPIMAGE_EXTRACT_AND_RUN=1
+            ./appimagetool-x86_64.AppImage AppDir-admin InventoryApp[Admin].AppImage
         
       - name: Upload
         uses: actions/upload-artifact@v4
@@ -84,8 +106,8 @@ jobs:
 
       - name: Build EXE (admin & main)
         run: |
-          pyinstaller main.py --onefile --add-data="Ui;Ui"
-          pyinstaller admin.py --onefile --add-data="Ui;Ui"
+          pyinstaller main.py --onefile --add-data="Ui;Ui" --icon="Asset/icon.ico"
+          pyinstaller admin.py --onefile --add-data="Ui;Ui" --icon="Asset/icon.ico"
 
       - name: Upload
         uses: actions/upload-artifact@v4
