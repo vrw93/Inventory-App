@@ -133,8 +133,6 @@ class main(QMainWindow):
     def randomKeyCode(self):
         chars = string.ascii_uppercase + string.digits
         key = "".join([random.choice(chars) for _ in range(4)])
-
-        print(key)
         return key
 
     def resource_path(self, relative_path):
