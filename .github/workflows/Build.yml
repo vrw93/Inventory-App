@@ -48,7 +48,7 @@ jobs:
       - name: Make AppDir (admin)
         run: |
           mkdir -p AppDir-admin/usr/bin
-          cp dist/main AppDir-admin/usr/bin/
+          cp dist/admain AppDir-admin/usr/bin/
 
           echo '#!/bin/bash
           exec "$(dirname "$0")/usr/bin/main"' > AppDir-admin/AppRun
