@@ -1,9 +1,13 @@
 <div align="center">
   
 # Inventory App
-![Python](https://img.shields.io/badge/python-3.12+-blue.svg)
-![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Python](https://img.shields.io/badge/python-3.12%2B-blue.svg?style=for-the-badge&logo=python&logoColor=white)
+![Platform](https://img.shields.io/badge/platform-Windows-lightgrey?style=for-the-badge&logoColor=white)
+![Platform](https://img.shields.io/badge/platform-Arch_Linux-blue?style=for-the-badge&logo=archlinux&logoColor=blue)
+![Platform](https://img.shields.io/badge/platform-Linux-orange?style=for-the-badge&logo=linux&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-green.svg?style=for-the-badge)
+![Build](https://img.shields.io/github/actions/workflow/status/vrw93/Inventory-App/Build.yml?branch=main&style=for-the-badge&logo=github&logoColor=white)
+![version](https://img.shields.io/badge/Version-v1.1a-purple?style=for-the-badge)
 </div>
 
 ## ✅ Feature
