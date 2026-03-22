@@ -36,9 +36,7 @@ jobs:
           ./usr/bin/main' > AppDir-main/AppRun
 
           chmod +x AppDir-main/AppRun
-
-          mkdir -p AppDir-main/usr/share/icons/hicolor/256x256/apps
-          cp Assets/icon.png AppDir-main/usr/share/icons/hicolor/256x256/apps/inventory.png
+          cp Assets/icon.png AppDir-main/inventory.png
 
           echo "[Desktop Entry]
           Name=InventoryApp
@@ -56,9 +54,7 @@ jobs:
           ./usr/bin/main' > AppDir-admin/AppRun
 
           chmod +x AppDir-admin/AppRun
-
-          mkdir -p AppDir-admin/usr/share/icons/hicolor/256x256/apps
-          cp Assets/icon.png AppDir-admin/usr/share/icons/hicolor/256x256/apps/inventory.png
+          cp Assets/icon.png AppDir-admin/inventory.png
 
           echo "[Desktop Entry]
           Name=InventoryApp[admin]
@@ -106,8 +102,8 @@ jobs:
 
       - name: Build EXE (admin & main)
         run: |
-          pyinstaller main.py --onefile --add-data="Ui;Ui" --icon="Asset/icon.ico"
-          pyinstaller admin.py --onefile --add-data="Ui;Ui" --icon="Asset/icon.ico"
+          pyinstaller main.py --onefile --add-data="Ui;Ui" --icon="Assets/icon.ico"
+          pyinstaller admin.py --onefile --add-data="Ui;Ui" --icon="Assets/icon.ico"
 
       - name: Upload
         uses: actions/upload-artifact@v4
