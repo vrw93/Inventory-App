@@ -6,6 +6,7 @@ from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt, QSettings
 from Core import Storage
 from datetime import datetime
+from PySide6.QtGui import QIcon
 
 class main(QMainWindow):
     def __init__(self):
@@ -13,6 +14,7 @@ class main(QMainWindow):
         #Windows Setup
         self.setWindowTitle("Aplikasi Inventaris")
         self.setGeometry(100, 100, 800, 600)
+        self.setWindowIcon(QIcon(self.resource_path("Assets/icon.png")))
 
         #Settings
         self.settings = QSettings("VrwDev", "Inventory_App")
@@ -196,6 +198,7 @@ class returnWindow(QDialog):
         #Windows Setup
         self.setWindowTitle("Kembalikan Barang")
         self.setGeometry(100, 100, 500, 400)
+        self.setWindowIcon(QIcon(self.resource_path("Assets/icon.png")))
         
         #File/DB
         loader = QUiLoader()

@@ -3,6 +3,7 @@ from PySide6.QtWidgets import (QMainWindow, QApplication, QAbstractItemView, QSp
 QTableWidgetItem, QDialog, QVBoxLayout, QInputDialog, QMessageBox)
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt, QSettings
+from PySide6.QtGui import QIcon
 import sys, os
 
 class main(QMainWindow):
@@ -14,6 +15,7 @@ class main(QMainWindow):
         #Windows Setup
         self.setWindowTitle("Aplikasi Inventaris[Admin]")
         self.setGeometry(100, 100, 800, 600)
+        self.setWindowIcon(QIcon(self.resource_path("Assets/icon.png")))
         
         #Settings
         self.settings = QSettings("VrwDev", "Inventory_App")
@@ -71,7 +73,6 @@ class main(QMainWindow):
                 self.themeSwitcher.setText("Light")
             else:
                 self.themeSwitcher.setText("Dark")
-
 
     def addItem(self):
         accpt = False
@@ -171,6 +172,7 @@ class itemBorrowedWindow(QDialog):
         #Windows Setup
         self.setWindowTitle("Item Window[Admin]")
         self.setGeometry(100, 100, 800, 600)
+        self.setWindowIcon(QIcon(self.resource_path("Assets/icon.png")))
         
         #File/DB
         loader = QUiLoader()
