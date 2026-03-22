@@ -1,7 +1,4 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
-
-name: Python application
+name: CI
 
 on:
   push:
@@ -33,16 +30,5 @@ jobs:
       - name: Lint
         run: flake8 . --exit-zero
 
-      - name: Test
+      - name: Run Test
         run: xvfb-run pytest || true
-
-      - name: Build Apps
-        run: |
-              pyinstaller main.py --onefile --add-data="Ui:Ui"
-              pyinstaller admin.py --onefile --add-data="Ui:Ui"
-              
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app
-          path: dist/
