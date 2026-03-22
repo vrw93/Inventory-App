@@ -1,10 +1,11 @@
 from Core.Storage import Storage
-from PySide6.QtWidgets import (QMainWindow, QApplication, QAbstractItemView, QSpinBox,
+from PySide6.QtWidgets import (QMainWindow, QApplication, QAbstractItemView, QFileDialog,
 QTableWidgetItem, QDialog, QVBoxLayout, QInputDialog, QMessageBox)
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt, QSettings
 from PySide6.QtGui import QIcon
 import sys, os
+import pandas as pd
 
 class main(QMainWindow):
     def __init__(self):
@@ -35,6 +36,7 @@ class main(QMainWindow):
         self.addBtn = self.ui.findChild(type(self.ui.TambahItemBtn), "TambahItemBtn")
         self.delBtn = self.ui.findChild(type(self.ui.HapusItemBtn), "HapusItemBtn")
         self.themeSwitcher = self.ui.findChild(type(self.ui.ThemeSwitcher), "ThemeSwitcher")
+        self.exportcsvbtn = self.ui.findChild(type(self.ui.ExportCSVBtn), "ExportCSVBtn")
 
         #Connect Thing
         self.searchBarP.textChanged.connect(self.SearchBorrower)
@@ -42,14 +44,43 @@ class main(QMainWindow):
         self.addBtn.clicked.connect(self.addItem)
         self.delBtn.clicked.connect(self.delItem)
         self.themeSwitcher.clicked.connect(self.themeSwitch)
+        self.exportcsvbtn.clicked.connect(self.csvExport)
 
         #Post Setup
         self.setCentralWidget(self.ui)
         self.loadBorrower()
         self.loadItem()
-        ##theme
+
+        #theme
         theme = self.settings.value("UI/theme", "main")
         self.loadStyle(theme)
+
+    def csvExport(self):
+        borrower = self.db.getBorrower()
+        data = {}
+
+        for (peminjam, key, tglP) in borrower:
+            items = self.db.getBorrowItem(key)
+            data[peminjam] = (tglP, items)
+
+        rows = []
+        for key, (date, items) in data.items():
+            for item in items:
+                rows.append([key, date] + list(item))
+
+        columns = ['Borrower', 'Borrower Date', 'Key', 'Item', 'Amount', 'Borrow Date', 'Item Id', 'Return Date', 'Return Amount']
+        df = pd.DataFrame(rows, columns=columns)
+
+        filename, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save File",
+            "",
+            "CSV file (*.csv);;Text File (*.txt);;All File (*.*)"
+        )
+        if filename:
+            df.to_csv(filename, index=False, sep=';')
+
+            QMessageBox.information(self, "CSV Export", "Succesfully Export CSV")
 
     def themeSwitch(self):
         if self.theme == "main":

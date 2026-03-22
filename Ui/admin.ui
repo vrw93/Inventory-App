@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>525</width>
-    <height>452</height>
+    <width>825</width>
+    <height>515</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,6 +26,158 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
+     <widget class="QWidget" name="tabOverview">
+      <attribute name="title">
+       <string>Overview</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_4">
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Peminjam Terbaru</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>All Item</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Item Terbaru</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Inventory Overview</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QPushButton" name="ExportCSVBtn">
+         <property name="text">
+          <string>Export to CSV(all)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0" colspan="2">
+        <widget class="QTableWidget" name="OverviewTable">
+         <attribute name="horizontalHeaderMinimumSectionSize">
+          <number>40</number>
+         </attribute>
+         <attribute name="horizontalHeaderStretchLastSection">
+          <bool>true</bool>
+         </attribute>
+         <attribute name="verticalHeaderStretchLastSection">
+          <bool>false</bool>
+         </attribute>
+         <row/>
+         <column>
+          <property name="text">
+           <string>Item</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Total</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Di Pinjam</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Peminjam</string>
+          </property>
+         </column>
+         <item row="0" column="0">
+          <property name="text">
+           <string>test1</string>
+          </property>
+         </item>
+         <item row="0" column="1">
+          <property name="text">
+           <string>4</string>
+          </property>
+         </item>
+         <item row="0" column="2">
+          <property name="text">
+           <string>2</string>
+          </property>
+         </item>
+         <item row="0" column="3">
+          <property name="text">
+           <string>2</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QTableWidget" name="CurrentBorrowerTab">
+         <attribute name="horizontalHeaderStretchLastSection">
+          <bool>true</bool>
+         </attribute>
+         <row/>
+         <column>
+          <property name="text">
+           <string>Nama</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Meminjam</string>
+          </property>
+         </column>
+         <item row="0" column="0">
+          <property name="text">
+           <string>User1</string>
+          </property>
+         </item>
+         <item row="0" column="1">
+          <property name="text">
+           <string>2</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QTableWidget" name="CurrentItemTab">
+         <attribute name="horizontalHeaderStretchLastSection">
+          <bool>true</bool>
+         </attribute>
+         <row/>
+         <column>
+          <property name="text">
+           <string>Nama</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Di Pinjam</string>
+          </property>
+         </column>
+         <item row="0" column="0">
+          <property name="text">
+           <string>Test1</string>
+          </property>
+         </item>
+         <item row="0" column="1">
+          <property name="text">
+           <string>2</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="PeminjamTab">
       <attribute name="title">
        <string extracomment="Data-Data Peminjam">Peminjam</string>
@@ -139,7 +291,7 @@
    <item row="3" column="0">
     <widget class="QPushButton" name="ThemeSwitcher">
      <property name="text">
-      <string>PushButton</string>
+      <string>Dark</string>
      </property>
     </widget>
    </item>
