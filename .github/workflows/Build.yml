@@ -47,10 +47,12 @@ jobs:
 
           chmod +x AppDir-admin/AppRun
 
-      - name: Download AppImageTool
+      - name: Download AppImageTool And Setup
         run: |
           wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool-x86_64.AppImage
+          sudo apt-get update
+          sudo apt-get install -y fuse libfuse2
 
       - name: Build AppImage (main)
         run: ./appimagetool-x86_64.AppImage AppDir-main InventoryApp.AppImage
