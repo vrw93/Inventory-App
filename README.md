@@ -21,9 +21,10 @@
 </p>
 
 ## 🗺 Road Map
-- [ ] Add Admin Window
-- [ ] Add Key Code or List Base System
+- [ ] ~~Add Admin Window~~ [done]
+- [ ] ~~Add Key Code or List Base System~~ [done]
 - [ ] QOL
+- [ ] ~~Theme Switcher~~ [done]
 
 ## ⚒ Tech Stack
 ### Programing Language 
