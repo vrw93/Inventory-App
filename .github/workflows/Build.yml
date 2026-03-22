@@ -33,7 +33,7 @@ jobs:
           cp dist/main AppDir-main/usr/bin/
 
           echo '#!/bin/bash
-          ./usr/bin/main' > AppDir-main/AppRun
+          exec "$(dirname "$0")/usr/bin/main"' > AppDir-main/AppRun
 
           chmod +x AppDir-main/AppRun
           cp Assets/icon.png AppDir-main/inventory.png
@@ -51,7 +51,7 @@ jobs:
           cp dist/main AppDir-admin/usr/bin/
 
           echo '#!/bin/bash
-          ./usr/bin/main' > AppDir-admin/AppRun
+          exec "$(dirname "$0")/usr/bin/main"' > AppDir-admin/AppRun
 
           chmod +x AppDir-admin/AppRun
           cp Assets/icon.png AppDir-admin/inventory.png
@@ -82,7 +82,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: appimage
-          path: "*.AppImage"
+          path: |
+            "InventoryApp.AppImage"
+            "InventoryApp[Admin].AppImage"
 
   #Windows Build
   build-windows:
