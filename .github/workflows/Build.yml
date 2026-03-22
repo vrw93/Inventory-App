@@ -83,8 +83,8 @@ jobs:
         with:
           name: appimage
           path: |
-            "InventoryApp.AppImage"
-            "InventoryApp[Admin].AppImage"
+            *AppImage
+            !appimagetool*.AppImage
 
   #Windows Build
   build-windows:
