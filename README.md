@@ -25,6 +25,8 @@
 - [ ] ~~Add Key Code or List Base System~~ [done]
 - [ ] QOL
 - [ ] ~~Theme Switcher~~ [done]
+- [ ] Admin Dashboard Overview
+- [ ] CSV Export
 
 ## ⚒ Tech Stack
 ### Programing Language 
