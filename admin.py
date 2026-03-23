@@ -1,7 +1,7 @@
 from Core.Storage import Storage
 from PySide6.QtWidgets import (QMainWindow, QApplication, QAbstractItemView, QFileDialog,
 QTableWidgetItem, QDialog, QVBoxLayout, QInputDialog, QMessageBox, QTableWidget, QPushButton,
-QLineEdit)
+QLineEdit, QLabel)
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt, QSettings
 from PySide6.QtGui import QIcon
@@ -67,7 +67,8 @@ class main(QMainWindow):
 
     def selectBorrowerByItem(self, item):
         key = item.data(Qt.UserRole)
-        dlg = BorrowerWindow(key, self.theme)
+        name = item.data(Qt.UserRole + 1)
+        dlg = BorrowerWindow(key, self.theme, name)
         dlg.exec()
 
     def recentItem(self):
@@ -100,10 +101,12 @@ class main(QMainWindow):
             if indx < self.maxRecent:
                 name = QTableWidgetItem(_name)
                 name.setData(Qt.UserRole, _keys)
+                name.setData(Qt.UserRole + 1, _name)
                 self.recentItemOvrvw.setItem(row, 0, name)
 
                 counts = QTableWidgetItem(str(_count))
                 counts.setData(Qt.UserRole, _keys)
+                counts.setData(Qt.UserRole + 1, _name)
                 self.recentItemOvrvw.setItem(row, 1, counts)
 
     def recentUser(self):
@@ -336,10 +339,11 @@ class itemBorrowedWindow(QDialog):
         return os.path.join(os.path.abspath("."), relative_path)
 
 class BorrowerWindow(QDialog):
-    def __init__(self, key:list, theme):
+    def __init__(self, key:list, theme, name:str):
         super().__init__()
         self.key = key
         self.theme = theme
+        self.name = name
         #Windows Setup
         self.setWindowTitle("Borrower Window[Admin]")
         self.setGeometry(100, 100, 800, 600)
@@ -355,6 +359,7 @@ class BorrowerWindow(QDialog):
 
         #Ref
         self.table:QTableWidget = self.ui.findChild(type(self.ui.ItemSelect), "ItemSelect")
+        self.label:QLabel = self.ui.findChild(type(self.ui.borrowLabel), "borrowLabel")
 
         #Connection
         self.table.itemClicked.connect(self.selectBorrower)
@@ -377,6 +382,7 @@ class BorrowerWindow(QDialog):
         data = self.db.getBorrowerByKey(self.key)
 
         self.table.setRowCount(len(data))
+        self.label.setText(f"Peminjam Item {self.name}")
         
         for row, (_name, _key, _date) in enumerate(data):
             name = QTableWidgetItem(_name)
