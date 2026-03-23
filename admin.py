@@ -6,6 +6,7 @@ from PySide6.QtCore import QFile, Qt, QSettings
 from PySide6.QtGui import QIcon
 import sys, os
 import pandas as pd
+from datetime import datetime
 
 class main(QMainWindow):
     def __init__(self):
@@ -37,10 +38,12 @@ class main(QMainWindow):
         self.delBtn = self.ui.findChild(type(self.ui.HapusItemBtn), "HapusItemBtn")
         self.themeSwitcher = self.ui.findChild(type(self.ui.ThemeSwitcher), "ThemeSwitcher")
         self.exportcsvbtn = self.ui.findChild(type(self.ui.ExportCSVBtn), "ExportCSVBtn")
+        self.recentBorrowerOvrvw = self.ui.findChild(type(self.ui.CurrentBorrowerTab), "CurrentBorrowerTab")
 
         #Connect Thing
         self.searchBarP.textChanged.connect(self.SearchBorrower)
         self.tableP.itemClicked.connect(self.selectBorrower)
+        self.recentBorrowerOvrvw.itemClicked.connect(self.selectBorrower)
         self.addBtn.clicked.connect(self.addItem)
         self.delBtn.clicked.connect(self.delItem)
         self.themeSwitcher.clicked.connect(self.themeSwitch)
@@ -50,10 +53,32 @@ class main(QMainWindow):
         self.setCentralWidget(self.ui)
         self.loadBorrower()
         self.loadItem()
+        self.recentUser()
 
         #theme
         theme = self.settings.value("UI/theme", "main")
         self.loadStyle(theme)
+
+    def recentUser(self):
+        datas = self.db.getBorrower()
+        datasSorted = sorted(datas, key=lambda x: datetime.strptime(x[2], '%Y-%m-%d %H:%M'), reverse=True)
+
+        self.recentBorrowerOvrvw.setRowCount(len(datasSorted))
+
+        def getBorrowedCount(obj, key):
+            data = obj.db.getBorrowItem(key)
+            filteredData = [row[2] for row in data]
+            return sum(filteredData)
+
+        for row, (_name, _key, _) in enumerate(datasSorted):
+            name = QTableWidgetItem(_name)
+            name.setData(Qt.UserRole, _key)
+            self.recentBorrowerOvrvw.setItem(row, 0, name)
+
+            borrowedCount = getBorrowedCount(self, _key)
+            count = QTableWidgetItem(str(borrowedCount))
+            count.setData(Qt.UserRole, _key)
+            self.recentBorrowerOvrvw.setItem(row, 1, count)
 
     def csvExport(self):
         borrower = self.db.getBorrower()
