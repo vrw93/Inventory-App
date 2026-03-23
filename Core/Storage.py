@@ -153,3 +153,13 @@ class Storage():
                 ORDER BY nama_peminjam DESC
             """)
             return c.fetchall()
+        
+    def getBorrowerByKey(self, keys: list):
+        with self.getDB() as conn:
+            c = conn.cursor()
+            placeholders = ','.join('?' * len(keys))
+            c.execute(f"""
+                SELECT nama_peminjam, key, tanggal_pinjam FROM borrow
+                WHERE borrow.key IN ({placeholders})
+            """, keys)
+            return c.fetchall()

@@ -21,6 +21,18 @@ def test_remove_item():
     result = storage.getItem()
     assert result == [("Test2", 6)]
 
+def test_getborrowerbykey():
+    conn = sqlite3.connect(":memory:")
+    storage = Storage(test_conn=conn)
+
+    storage.borrowItem({"Test3": 3}, "QWERTY", "02-01-2026", "Vrw")
+    storage.borrowItem({"Test2": 2, "Test4": 3}, "ASDF", "02-02-2026", "Vrw2")
+
+    borrowers = storage.getBorrowerByKey(["QWERTY", "ASDF"])
+
+    for row, (borrower, _, _) in enumerate(borrowers):
+        assert borrowers[row][0] == borrower
+
 def test_borrowitem():
     conn = sqlite3.connect(":memory:")
     storage = Storage(test_conn=conn)

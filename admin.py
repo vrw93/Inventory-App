@@ -1,18 +1,21 @@
 from Core.Storage import Storage
 from PySide6.QtWidgets import (QMainWindow, QApplication, QAbstractItemView, QFileDialog,
-QTableWidgetItem, QDialog, QVBoxLayout, QInputDialog, QMessageBox)
+QTableWidgetItem, QDialog, QVBoxLayout, QInputDialog, QMessageBox, QTableWidget, QPushButton,
+QLineEdit)
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt, QSettings
 from PySide6.QtGui import QIcon
 import sys, os
 import pandas as pd
 from datetime import datetime
+from collections import defaultdict
 
 class main(QMainWindow):
     def __init__(self):
         super().__init__()
         #Variable
         self.itemTotals = {}
+        self.maxRecent = 10
 
         #Windows Setup
         self.setWindowTitle("Aplikasi Inventaris[Admin]")
@@ -31,14 +34,15 @@ class main(QMainWindow):
         self.db = Storage()
 
         #Reference
-        self.tableP = self.ui.findChild(type(self.ui.PeminjamTable), "PeminjamTable")
-        self.searchBarP = self.ui.findChild(type(self.ui.CariPeminjam), "CariPeminjam")
-        self.tableI = self.ui.findChild(type(self.ui.ItemTable), "ItemTable")
-        self.addBtn = self.ui.findChild(type(self.ui.TambahItemBtn), "TambahItemBtn")
-        self.delBtn = self.ui.findChild(type(self.ui.HapusItemBtn), "HapusItemBtn")
-        self.themeSwitcher = self.ui.findChild(type(self.ui.ThemeSwitcher), "ThemeSwitcher")
-        self.exportcsvbtn = self.ui.findChild(type(self.ui.ExportCSVBtn), "ExportCSVBtn")
-        self.recentBorrowerOvrvw = self.ui.findChild(type(self.ui.CurrentBorrowerTab), "CurrentBorrowerTab")
+        self.tableP:QTableWidget = self.ui.findChild(type(self.ui.PeminjamTable), "PeminjamTable")
+        self.searchBarP:QLineEdit = self.ui.findChild(type(self.ui.CariPeminjam), "CariPeminjam")
+        self.tableI:QTableWidget = self.ui.findChild(type(self.ui.ItemTable), "ItemTable")
+        self.addBtn:QPushButton = self.ui.findChild(type(self.ui.TambahItemBtn), "TambahItemBtn")
+        self.delBtn:QPushButton = self.ui.findChild(type(self.ui.HapusItemBtn), "HapusItemBtn")
+        self.themeSwitcher:QPushButton = self.ui.findChild(type(self.ui.ThemeSwitcher), "ThemeSwitcher")
+        self.exportcsvbtn:QPushButton = self.ui.findChild(type(self.ui.ExportCSVBtn), "ExportCSVBtn")
+        self.recentBorrowerOvrvw:QTableWidget = self.ui.findChild(type(self.ui.CurrentBorrowerTab), "CurrentBorrowerTab")
+        self.recentItemOvrvw:QTableWidget = self.ui.findChild(type(self.ui.CurrentItemTab), "CurrentItemTab")
 
         #Connect Thing
         self.searchBarP.textChanged.connect(self.SearchBorrower)
@@ -48,37 +52,83 @@ class main(QMainWindow):
         self.delBtn.clicked.connect(self.delItem)
         self.themeSwitcher.clicked.connect(self.themeSwitch)
         self.exportcsvbtn.clicked.connect(self.csvExport)
+        self.recentItemOvrvw.itemClicked.connect(self.selectBorrowerByItem)
 
         #Post Setup
         self.setCentralWidget(self.ui)
         self.loadBorrower()
         self.loadItem()
         self.recentUser()
+        self.recentItem()
 
         #theme
         theme = self.settings.value("UI/theme", "main")
         self.loadStyle(theme)
 
+    def selectBorrowerByItem(self, item):
+        key = item.data(Qt.UserRole)
+        dlg = BorrowerWindow(key, self.theme)
+        dlg.exec()
+
+    def recentItem(self):
+        userdata = self.db.getBorrower()
+        items = []
+        keys = [row[1] for row in userdata]
+
+        #Collect All Borrowed Items
+        for key in keys:
+            datas = self.db.getBorrowItem(key)
+            items.extend([(row[0], row[1], row[2], row[3], row[6]) for row in datas])
+
+        #Remove Unnecessary Data
+        grouped = defaultdict(lambda: {"count": 0, "date": "", "keys": []})
+        for key, name, count, date, countb in items:
+            grouped[name]["count"] += (count - countb if countb is not None else count)
+            grouped[name]["keys"].append(key)
+            if date > grouped[name]["date"]:
+                grouped[name]["date"] = date
+
+        #Sorting Into Recent Item
+        item = [(name, val["count"], val["date"], val["keys"]) for name, val in grouped.items()]
+        itemSorted = sorted(item, key=lambda x: datetime.strptime(x[2], '%Y-%m-%d %H:%M'), reverse=True)
+
+        self.recentItemOvrvw.setRowCount(min(len(itemSorted), self.maxRecent))
+
+        indx = 0
+        for row, (_name, _count, _, _keys) in enumerate(itemSorted):
+            indx += 1
+            if indx < self.maxRecent:
+                name = QTableWidgetItem(_name)
+                name.setData(Qt.UserRole, _keys)
+                self.recentItemOvrvw.setItem(row, 0, name)
+
+                counts = QTableWidgetItem(str(_count))
+                counts.setData(Qt.UserRole, _keys)
+                self.recentItemOvrvw.setItem(row, 1, counts)
+
     def recentUser(self):
         datas = self.db.getBorrower()
         datasSorted = sorted(datas, key=lambda x: datetime.strptime(x[2], '%Y-%m-%d %H:%M'), reverse=True)
 
-        self.recentBorrowerOvrvw.setRowCount(len(datasSorted))
+        self.recentBorrowerOvrvw.setRowCount(min(len(datasSorted), self.maxRecent))
 
         def getBorrowedCount(obj, key):
             data = obj.db.getBorrowItem(key)
             filteredData = [row[2] for row in data]
             return sum(filteredData)
 
+        indx = 0
         for row, (_name, _key, _) in enumerate(datasSorted):
-            name = QTableWidgetItem(_name)
-            name.setData(Qt.UserRole, _key)
-            self.recentBorrowerOvrvw.setItem(row, 0, name)
+            indx += 1
+            if indx < self.maxRecent:
+                name = QTableWidgetItem(_name)
+                name.setData(Qt.UserRole, _key)
+                self.recentBorrowerOvrvw.setItem(row, 0, name)
 
-            borrowedCount = getBorrowedCount(self, _key)
-            count = QTableWidgetItem(str(borrowedCount))
-            count.setData(Qt.UserRole, _key)
-            self.recentBorrowerOvrvw.setItem(row, 1, count)
+                borrowedCount = getBorrowedCount(self, _key)
+                count = QTableWidgetItem(str(borrowedCount))
+                count.setData(Qt.UserRole, _key)
+                self.recentBorrowerOvrvw.setItem(row, 1, count)
 
     def csvExport(self):
         borrower = self.db.getBorrower()
@@ -239,7 +289,7 @@ class itemBorrowedWindow(QDialog):
         self.db = Storage()
 
         #Reference
-        self.table = self.ui.findChild(type(self.ui.BorroweredItem), "BorroweredItem")
+        self.table:QTableWidget = self.ui.findChild(type(self.ui.BorroweredItem), "BorroweredItem")
 
         #Post Load
         self.loadBorrowItem()
@@ -284,6 +334,72 @@ class itemBorrowedWindow(QDialog):
         if hasattr(sys, "_MEIPASS"):
             return os.path.join(sys._MEIPASS, relative_path)
         return os.path.join(os.path.abspath("."), relative_path)
+
+class BorrowerWindow(QDialog):
+    def __init__(self, key:list, theme):
+        super().__init__()
+        self.key = key
+        self.theme = theme
+        #Windows Setup
+        self.setWindowTitle("Borrower Window[Admin]")
+        self.setGeometry(100, 100, 800, 600)
+        self.setWindowIcon(QIcon(self.resource_path("Assets/icon.png")))
+        
+        #File/DB
+        loader = QUiLoader()
+        file = QFile(self.resource_path("Ui/borrower.ui"))
+        file.open(QFile.ReadOnly)
+        self.ui = loader.load(file, self)
+        file.close()
+        self.db = Storage()
+
+        #Ref
+        self.table:QTableWidget = self.ui.findChild(type(self.ui.ItemSelect), "ItemSelect")
+
+        #Connection
+        self.table.itemClicked.connect(self.selectBorrower)
+
+        #postLoad
+        self.loadBorrower()
+
+        #UIs
+        layouts = QVBoxLayout()
+        layouts.addWidget(self.ui)
+        self.setLayout(layouts)
+        self.loadStyle()
+
+    def selectBorrower(self, item):
+        key = item.data(Qt.UserRole)
+        dlg = itemBorrowedWindow(key, self.theme)
+        dlg.exec()
+
+    def loadBorrower(self):
+        data = self.db.getBorrowerByKey(self.key)
+
+        self.table.setRowCount(len(data))
+        
+        for row, (_name, _key, _date) in enumerate(data):
+            name = QTableWidgetItem(_name)
+            name.setData(Qt.UserRole, _key)
+            self.table.setItem(row, 0, name)
+
+            key = QTableWidgetItem(_key)
+            key.setData(Qt.UserRole, _key)
+            self.table.setItem(row, 1, key)
+
+            date = QTableWidgetItem(_date)
+            date.setData(Qt.UserRole, _key)
+            self.table.setItem(row, 2, date)
+
+    def loadStyle(self):
+        with open(self.resource_path(f"Ui/Style/{self.theme}.qss"), "r") as f:
+            self.setStyleSheet(f.read())
+
+    def resource_path(self, relative_path):
+        if hasattr(sys, "_MEIPASS"):
+            return os.path.join(sys._MEIPASS, relative_path)
+        return os.path.join(os.path.abspath("."), relative_path)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
