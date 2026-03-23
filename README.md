@@ -14,6 +14,9 @@
 - Borrow Item Window
 - Return Item Window
 - Key Code Base Inventory System
+- Theme Switcher
+- Item & Borrower Searching
+- Stock Base Inventory System
 
 ## 📷 Preview
 <p align="center">
