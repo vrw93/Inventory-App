@@ -32,10 +32,10 @@
 ## 🗺 Road Map
 - [ ] ~~Add Admin Window~~ [done]
 - [ ] ~~Add Key Code or List Base System~~ [done]
-- [ ] QOL
+- [ ] QOL [Partial]
 - [ ] ~~Theme Switcher~~ [done]
-- [ ] Admin Dashboard Overview
-- [ ] CSV Export
+- [ ] ~~Admin Dashboard Overview~~ [done]
+- [ ] ~~CSV Export~~ [done]
 
 ## ⚒ Tech Stack
 ### Programing Language 
