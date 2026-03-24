@@ -17,6 +17,8 @@
 - Theme Switcher
 - Item & Borrower Searching
 - Stock Base Inventory System
+- Admin Overview Tabs
+- CSV Export
 
 ## 📷 Preview
 <p align="center">
