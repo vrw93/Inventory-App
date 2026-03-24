@@ -132,7 +132,7 @@ class Storage():
                     UPDATE borrowitem SET tanggal_kembali = ? WHERE nama_item = ?
                 """, (date, item))
 
-    def getBorrowItem(self, key):
+    def getBorrowItem(self, key:str):
         with self.getDB() as conn:
             c = conn.cursor()
             c.execute("""
@@ -152,4 +152,14 @@ class Storage():
                 SELECT nama_peminjam, key, tanggal_pinjam FROM borrow
                 ORDER BY nama_peminjam DESC
             """)
+            return c.fetchall()
+        
+    def getBorrowerByKey(self, keys: list):
+        with self.getDB() as conn:
+            c = conn.cursor()
+            placeholders = ','.join('?' * len(keys))
+            c.execute(f"""
+                SELECT nama_peminjam, key, tanggal_pinjam FROM borrow
+                WHERE borrow.key IN ({placeholders})
+            """, keys)
             return c.fetchall()

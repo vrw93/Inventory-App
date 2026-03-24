@@ -7,13 +7,16 @@
 ![Platform](https://img.shields.io/badge/platform-Linux-orange?style=for-the-badge&logo=linux&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green.svg?style=for-the-badge)
 ![Build](https://img.shields.io/github/actions/workflow/status/vrw93/Inventory-App/Build.yml?branch=main&style=for-the-badge&logo=github&logoColor=white)
-![version](https://img.shields.io/badge/Version-v1.1a-purple?style=for-the-badge)
+![version](https://img.shields.io/badge/Version-v1.2a-purple?style=for-the-badge)
 </div>
 
 ## ✅ Feature
 - Borrow Item Window
 - Return Item Window
 - Key Code Base Inventory System
+- Theme Switcher
+- Item & Borrower Searching
+- Stock Base Inventory System
 
 ## 📷 Preview
 <p align="center">
@@ -29,6 +32,8 @@
 - [ ] ~~Add Key Code or List Base System~~ [done]
 - [ ] QOL
 - [ ] ~~Theme Switcher~~ [done]
+- [ ] Admin Dashboard Overview
+- [ ] CSV Export
 
 ## ⚒ Tech Stack
 ### Programing Language 
