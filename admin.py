@@ -44,6 +44,7 @@ class main(QMainWindow):
         self.recentBorrowerOvrvw:QTableWidget = self.ui.findChild(type(self.ui.CurrentBorrowerTab), "CurrentBorrowerTab")
         self.recentItemOvrvw:QTableWidget = self.ui.findChild(type(self.ui.CurrentItemTab), "CurrentItemTab")
         self.allItemOvrvw:QTableWidget = self.ui.findChild(type(self.ui.OverviewTable), "OverviewTable")
+        self.allItemSearchBar:QLineEdit = self.ui.findChild(type(self.ui.allitemsearchbar), "allitemsearchbar")
 
         #Connect Thing
         self.searchBarP.textChanged.connect(self.SearchBorrower)
@@ -55,6 +56,7 @@ class main(QMainWindow):
         self.exportcsvbtn.clicked.connect(self.csvExport)
         self.recentItemOvrvw.itemClicked.connect(self.selectBorrowerByItem)
         self.allItemOvrvw.itemClicked.connect(self.selectBorrowerByItem)
+        self.allItemSearchBar.textChanged.connect(self.AllItemSearch)
 
         #Post Setup
         self.setCentralWidget(self.ui)
@@ -67,6 +69,18 @@ class main(QMainWindow):
         #theme
         theme = self.settings.value("UI/theme", "main")
         self.loadStyle(theme)
+
+    def AllItemSearch(self, text):
+        if text is None:
+            return
+        
+        for row in range(self.allItemOvrvw.rowCount()):
+            match = False
+            item = self.allItemOvrvw.item(row, 0)
+            if item and text.lower() in item.text().lower():
+                match = True
+            
+            self.allItemOvrvw.setRowHidden(row, not match)
 
     def AllItemOverview(self):
         _itemLeft = self.db.getItem()
