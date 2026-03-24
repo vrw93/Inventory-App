@@ -222,3 +222,4 @@ Core/DB/DataBase.db
 
 #debugging
 test.py
+*.csv

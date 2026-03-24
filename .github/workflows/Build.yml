@@ -1,0 +1,114 @@
+name: Builds
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  #Linux Builds
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Install Deps
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build Binary
+        run: | 
+          pyinstaller main.py --onefile --add-data="Ui:Ui" --add-data="Assets:Assets" --windowed
+          pyinstaller admin.py --onefile --add-data="Ui:Ui" --add-data="Assets:Assets" --windowed
+      #Build to AppImage
+      - name: Make AppDir (main)
+        run: |
+          mkdir -p AppDir-main/usr/bin
+          cp dist/main AppDir-main/usr/bin/
+
+          echo '#!/bin/bash
+          exec "$(dirname "$0")/usr/bin/main"' > AppDir-main/AppRun
+
+          chmod +x AppDir-main/AppRun
+          cp Assets/icon.png AppDir-main/inventory.png
+
+          echo "[Desktop Entry]
+          Name=InventoryApp
+          Exec=main
+          Icon=inventory
+          Type=Application
+          Categories=Utility;" > AppDir-main/InventoryApp.desktop
+
+      - name: Make AppDir (admin)
+        run: |
+          mkdir -p AppDir-admin/usr/bin
+          cp dist/admin AppDir-admin/usr/bin/
+
+          echo '#!/bin/bash
+          exec "$(dirname "$0")/usr/bin/admin"' > AppDir-admin/AppRun
+
+          chmod +x AppDir-admin/AppRun
+          cp Assets/icon.png AppDir-admin/inventory.png
+
+          echo "[Desktop Entry]
+          Name=InventoryApp[admin]
+          Exec=admin
+          Icon=inventory
+          Type=Application
+          Categories=Utility;" > AppDir-admin/InventoryApp.desktop
+
+      - name: Download AppImageTool And Setup
+        run: |
+          wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+
+      - name: Build AppImage (main)
+        run: |
+            export APPIMAGE_EXTRACT_AND_RUN=1
+            ./appimagetool-x86_64.AppImage AppDir-main InventoryApp.AppImage
+
+      - name: Build AppImage (admin)
+        run: |
+            export APPIMAGE_EXTRACT_AND_RUN=1
+            ./appimagetool-x86_64.AppImage AppDir-admin InventoryApp[Admin].AppImage
+        
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: appimage
+          path: |
+            *AppImage
+            !appimagetool*.AppImage
+
+  #Windows Build
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install deps
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build EXE (admin & main)
+        run: |
+          pyinstaller main.py --onefile --add-data="Ui;Ui" --icon="Assets/icon.ico" --add-data="Assets;Assets" --windowed
+          pyinstaller admin.py --onefile --add-data="Ui;Ui" --icon="Assets/icon.ico" --add-data="Assets;Assets" --windowed
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-exe
+          path: dist/

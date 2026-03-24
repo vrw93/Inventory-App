@@ -41,10 +41,10 @@
         <bool>false</bool>
        </attribute>
        <attribute name="horizontalHeaderMinimumSectionSize">
-        <number>50</number>
+        <number>60</number>
        </attribute>
        <attribute name="horizontalHeaderDefaultSectionSize">
-        <number>50</number>
+        <number>60</number>
        </attribute>
        <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
         <bool>false</bool>

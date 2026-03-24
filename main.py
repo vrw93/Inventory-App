@@ -1,11 +1,12 @@
 import sys, os, string, random
 from PySide6.QtWidgets import (QApplication, QMainWindow, QTableWidgetItem, 
 QAbstractItemView, QMessageBox, QInputDialog, QDialog, QVBoxLayout, 
-QSpinBox)
+QSpinBox, QTableWidget, QPushButton, QLineEdit, QLabel)
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt, QSettings
 from Core import Storage
 from datetime import datetime
+from PySide6.QtGui import QIcon
 
 class main(QMainWindow):
     def __init__(self):
@@ -13,6 +14,7 @@ class main(QMainWindow):
         #Windows Setup
         self.setWindowTitle("Aplikasi Inventaris")
         self.setGeometry(100, 100, 800, 600)
+        self.setWindowIcon(QIcon(self.resource_path("Assets/icon.png")))
 
         #Settings
         self.settings = QSettings("VrwDev", "Inventory_App")
@@ -26,13 +28,13 @@ class main(QMainWindow):
         self.db = Storage.Storage()
 
         #Item Referencing
-        self.table = self.ui.findChild(type(self.ui.ItemSelect), "ItemSelect")
-        self.pjmbtn = self.ui.findChild(type(self.ui.PijamBtn), "PijamBtn")
-        self.tableB = self.ui.findChild(type(self.ui.ItemSelect_2), "ItemSelect_2")
-        self.borrowLabel = self.ui.findChild(type(self.ui.borrowLabel), "borrowLabel")
-        self.searchBar = self.ui.findChild(type(self.ui.SearchBar), "SearchBar")
-        self.codebtn = self.ui.findChild(type(self.ui.CodeBtn), "CodeBtn")
-        self.themeSwitcher = self.ui.findChild(type(self.ui.ThemeSwitcher), "ThemeSwitcher")
+        self.table:QTableWidget = self.ui.findChild(type(self.ui.ItemSelect), "ItemSelect")
+        self.pjmbtn:QPushButton = self.ui.findChild(type(self.ui.PijamBtn), "PijamBtn")
+        self.tableB:QTableWidget = self.ui.findChild(type(self.ui.ItemSelect_2), "ItemSelect_2")
+        self.borrowLabel:QLabel = self.ui.findChild(type(self.ui.borrowLabel), "borrowLabel")
+        self.searchBar:QLineEdit = self.ui.findChild(type(self.ui.SearchBar), "SearchBar")
+        self.codebtn:QPushButton = self.ui.findChild(type(self.ui.CodeBtn), "CodeBtn")
+        self.themeSwitcher:QPushButton = self.ui.findChild(type(self.ui.ThemeSwitcher), "ThemeSwitcher")
 
         #button Setup
         self.pjmbtn.clicked.connect(self.getSelectedItem)
@@ -133,8 +135,6 @@ class main(QMainWindow):
     def randomKeyCode(self):
         chars = string.ascii_uppercase + string.digits
         key = "".join([random.choice(chars) for _ in range(4)])
-
-        print(key)
         return key
 
     def resource_path(self, relative_path):
@@ -198,6 +198,7 @@ class returnWindow(QDialog):
         #Windows Setup
         self.setWindowTitle("Kembalikan Barang")
         self.setGeometry(100, 100, 500, 400)
+        self.setWindowIcon(QIcon(self.resource_path("Assets/icon.png")))
         
         #File/DB
         loader = QUiLoader()
@@ -209,9 +210,9 @@ class returnWindow(QDialog):
         self.loadStyle()
 
         #Item Referencing
-        self.table = self.ui.findChild(type(self.ui.ItemSelect), "ItemSelect")
-        self.RtnBtn = self.ui.findChild(type(self.ui.ReturnBtn), "ReturnBtn")
-        self.borrowLabel = self.ui.findChild(type(self.ui.borrowLabel), "borrowLabel")
+        self.table:QTableWidget = self.ui.findChild(type(self.ui.ItemSelect), "ItemSelect")
+        self.RtnBtn:QPushButton = self.ui.findChild(type(self.ui.ReturnBtn), "ReturnBtn")
+        self.borrowLabel:QLabel = self.ui.findChild(type(self.ui.borrowLabel), "borrowLabel")
 
         #Load Thing
         self.loadBorrowItem()
