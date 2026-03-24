@@ -132,7 +132,7 @@ class Storage():
                     UPDATE borrowitem SET tanggal_kembali = ? WHERE nama_item = ?
                 """, (date, item))
 
-    def getBorrowItem(self, key):
+    def getBorrowItem(self, key:str):
         with self.getDB() as conn:
             c = conn.cursor()
             c.execute("""

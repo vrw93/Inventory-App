@@ -43,6 +43,7 @@ class main(QMainWindow):
         self.exportcsvbtn:QPushButton = self.ui.findChild(type(self.ui.ExportCSVBtn), "ExportCSVBtn")
         self.recentBorrowerOvrvw:QTableWidget = self.ui.findChild(type(self.ui.CurrentBorrowerTab), "CurrentBorrowerTab")
         self.recentItemOvrvw:QTableWidget = self.ui.findChild(type(self.ui.CurrentItemTab), "CurrentItemTab")
+        self.allItemOvrvw:QTableWidget = self.ui.findChild(type(self.ui.OverviewTable), "OverviewTable")
 
         #Connect Thing
         self.searchBarP.textChanged.connect(self.SearchBorrower)
@@ -53,6 +54,7 @@ class main(QMainWindow):
         self.themeSwitcher.clicked.connect(self.themeSwitch)
         self.exportcsvbtn.clicked.connect(self.csvExport)
         self.recentItemOvrvw.itemClicked.connect(self.selectBorrowerByItem)
+        self.allItemOvrvw.itemClicked.connect(self.selectBorrowerByItem)
 
         #Post Setup
         self.setCentralWidget(self.ui)
@@ -60,10 +62,59 @@ class main(QMainWindow):
         self.loadItem()
         self.recentUser()
         self.recentItem()
+        self.AllItemOverview()
 
         #theme
         theme = self.settings.value("UI/theme", "main")
         self.loadStyle(theme)
+
+    def AllItemOverview(self):
+        _itemLeft = self.db.getItem()
+        borrowers = self.db.getBorrower()
+        datas = []
+        keys = [row[1] for row in borrowers]
+
+        #Make itemLeft Into Dict
+        itemLeft = {}
+        for key, total in _itemLeft:
+            itemLeft[key] = total
+
+        #Collect All Item Data
+        for key in keys:
+            _data = self.db.getBorrowItem(key)
+            datas.extend([(row[0], row[1], row[2], row[6]) for row in _data])
+
+        #Grouping Data
+        grouped = defaultdict(lambda: {"left": 0, "borrowed": 0, "keys": []})
+        for key, name, count, countb in datas:
+            grouped[name]["borrowed"] += (count - countb if countb is not None else count)
+            grouped[name]["left"] = itemLeft[name]
+            grouped[name]["keys"].append(key)
+
+        #Convert Into Tupple
+        item = [(name, (val["left"] + val["borrowed"]), val["left"], val["borrowed"], val["keys"]) for name, val in grouped.items()]
+        
+        self.allItemOvrvw.setRowCount(len(item))
+        for row, (_name, _total, _left, _borrowed, _keys) in enumerate(item):
+            name = QTableWidgetItem(_name)
+            name.setData(Qt.UserRole, _keys)
+            self.allItemOvrvw.setItem(row, 0, name)
+
+            total = QTableWidgetItem(str(_total))
+            total.setData(Qt.UserRole, _keys)
+            self.allItemOvrvw.setItem(row, 1, total)
+
+            borrowed = QTableWidgetItem(str(_borrowed))
+            borrowed.setData(Qt.UserRole, _keys)
+            self.allItemOvrvw.setItem(row, 2, borrowed)
+
+            left = QTableWidgetItem(str(_left))
+            left.setData(Qt.UserRole, _keys)
+            self.allItemOvrvw.setItem(row, 3, left)
+
+            borrowerCount = QTableWidgetItem(str(len(_keys)))
+            borrowerCount.setData(Qt.UserRole, _keys)
+            self.allItemOvrvw.setItem(row, 4, borrowerCount)
 
     def selectBorrowerByItem(self, item):
         key = item.data(Qt.UserRole)
@@ -81,7 +132,7 @@ class main(QMainWindow):
             datas = self.db.getBorrowItem(key)
             items.extend([(row[0], row[1], row[2], row[3], row[6]) for row in datas])
 
-        #Remove Unnecessary Data
+        #Remove Unnecessary Data & Grouping
         grouped = defaultdict(lambda: {"count": 0, "date": "", "keys": []})
         for key, name, count, date, countb in items:
             grouped[name]["count"] += (count - countb if countb is not None else count)
