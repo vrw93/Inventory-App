@@ -10,6 +10,9 @@
 [![version](https://img.shields.io/badge/Version-v1.2a-purple?style=for-the-badge)](https://github.com/vrw93/Inventory-App/releases)
 </div>
 
+> [!NOTE]
+> The Development Of This App Is Slow Down Recently Due To Several Things
+
 ## ✅ Feature
 - Borrow Item Window
 - Return Item Window
@@ -21,6 +24,8 @@
 - CSV Export
 
 ## 📷 Preview
+> [!NOTE]
+> All Picture Taken From Arch Hyprland
 <p align="center">
   <img width="1366" height="768" alt="2026-03-22-151752_hyprshot" src="https://github.com/user-attachments/assets/316a99f7-58c8-416a-a048-038132029ef7" />
   <img width="1366" height="768" alt="2026-03-22-151606_hyprshot" src="https://github.com/user-attachments/assets/d0242e67-6f28-40f8-8e7c-a4def45b4770" />
@@ -36,6 +41,9 @@
 - [ ] ~~Theme Switcher~~ [done]
 - [ ] ~~Admin Dashboard Overview~~ [done]
 - [ ] ~~CSV Export~~ [done]
+
+> [!WARNING]
+> There Was List Of Feature I Want To Add But I Dont Promise I Will Implement it
 
 ## ⚒ Tech Stack
 ### Programing Language 
