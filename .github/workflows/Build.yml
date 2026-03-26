@@ -104,8 +104,8 @@ jobs:
 
       - name: Build EXE (admin & main)
         run: |
-          pyinstaller main.py --onefile --add-data="Ui;Ui" --icon="Assets/icon.ico" --add-data="Assets;Assets" --windowed
-          pyinstaller admin.py --onefile --add-data="Ui;Ui" --icon="Assets/icon.ico" --add-data="Assets;Assets" --windowed
+          pyinstaller main.py --onefile --add-data="Ui;Ui" --icon="Assets/icon.ico" --add-data="Assets;Assets" --windowed --name "InventoryApp"
+          pyinstaller admin.py --onefile --add-data="Ui;Ui" --icon="Assets/icon.ico" --add-data="Assets;Assets" --windowed --name "InventoryApp[Admin]"
 
       - name: Upload
         uses: actions/upload-artifact@v4
