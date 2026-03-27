@@ -67,3 +67,7 @@ This Is **ONLY** My Hobby Project May There Was Bug In Some Early Builds
 
 ## LICENSE
 This Project Is Under MIT LICENSE see [LICENSE](LICENSE) For More Info
+
+## ⭐ Support
+
+If you find this project useful, consider giving it a star ⭐
